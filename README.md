@@ -229,6 +229,8 @@ O índice GIN `ix_log_matricula_detalhe` (`jsonb_path_ops`) atende a busca "toda
 
 Fica fora do log: mudança no cadastro do aluno (`tb_aluno`), porque o log é por matrícula. A secretaria é o único papel que altera `tb_aluno`.
 
+O `administracao_auditoria_v1.sql` tem que rodar como superusuário (o `bd2` do ambiente do professor é): a carga inicial do log grava direto na tabela, e a trava só deixa superusuário fazer isso.
+
 ### Backup e restauração
 
 `pg_dump -n projeto_bd2 -Fc` e `pg_restore`, rodando dentro do container. Passo a passo, casos de restauração e perguntas em [`docs/backup_restauracao.md`](docs/backup_restauracao.md). Ensaio com a impressão digital igual antes e depois em `evidencias/backup_restauracao_v1.txt`.
