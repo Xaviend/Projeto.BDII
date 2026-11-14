@@ -9,8 +9,9 @@ Objetivo: controle de acesso do Marco 2:
 Como rodar:
   - rodar DEPOIS de todos os outros scripts (modelo, carga, índices, views e auditoria): ele fecha as permissões
     de tudo que já existe no schema;
-  - pode rodar quantas vezes quiser (CREATE ROLE só se não existir, REVOKE antes de cada GRANT,
-    DROP POLICY IF EXISTS antes de cada policy).
+  - pode rodar quantas vezes quiser, e cada rodada desfaz mudança feita à mão: CREATE ROLE só se não existir e
+    ALTER ROLE acerta os atributos, os papéis saem de qualquer grupo que não seja o deles, REVOKE de tudo antes
+    dos GRANT, e todas as policies das tabelas com RLS são apagadas antes de criar as daqui.
   Os testes ficam em administracao_seguranca_testes_v1.sql.
 
 Como o banco sabe quem é o aluno:
@@ -31,9 +32,10 @@ Matriz de acesso (o que cada papel pode fazer):
   vw_historico                     | lê só o próprio (RLS)    | lê tudo                 | lê tudo
   mv_indicadores                   | -                        | lê                      | lê e atualiza (função)
   tb_aluno                         | lê só o próprio (RLS)    | lê, inclui, altera      | lê sem CPF/e-mail/nasc.
-  tb_matricula                     | lê só as próprias (RLS)  | lê, inclui, altera      | lê
+  tb_matricula                     | lê só as próprias (RLS)  | lê, inclui, só o status | lê
   tb_historico                     | lê só o próprio (RLS)    | lê, inclui, altera      | lê
-  tb_log_matricula                 | -                        | lê e inclui (o gatilho) | lê
+  tb_log_matricula                 | -                        | lê (inclui só o gatilho)| lê
+  funções                          | fn_matricula_do_usuario  | -                       | fn_atualizar_indicadores
   turma, disciplina, período, sala | lê (catálogo de oferta)  | lê                      | lê
   tb_professor                     | lê só nome e titulação   | lê                      | lê
   DELETE em qualquer tabela        | -                        | -                       | -
@@ -52,22 +54,34 @@ SET search_path TO projeto_bd2, public;
 -- Role é usuário e grupo ao mesmo tempo. aluno, secretaria e coordenacao são grupos: recebem as permissões.
 -- aluno_26000001 e aluno_26000012 são membros do grupo aluno e herdam (INHERIT) as permissões dele.
 -- Roles valem para o servidor inteiro (não só para um banco), por isso o "se não existir".
+-- Se o papel já existia, o ALTER ROLE desfaz qualquer atributo dado à mão (ex.: BYPASSRLS, que ignora o RLS).
+-- Pertencimento: os 5 papéis saem de qualquer grupo em que foram colocados (ex.: GRANT secretaria TO aluno_26000012)
+-- e os alunos entram só no grupo aluno. Funcionário de verdade colocado em secretaria ou coordenacao não é mexido.
 
 DO $$
 DECLARE
     v_papel TEXT;
+    v_grupo RECORD;
 BEGIN
-    FOREACH v_papel IN ARRAY ARRAY['aluno', 'secretaria', 'coordenacao'] LOOP
+    FOREACH v_papel IN ARRAY ARRAY['aluno', 'secretaria', 'coordenacao', 'aluno_26000001', 'aluno_26000012'] LOOP
         IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = v_papel) THEN
-            EXECUTE format('CREATE ROLE %I NOLOGIN', v_papel);
+            EXECUTE format('CREATE ROLE %I', v_papel);
         END IF;
+        EXECUTE format('ALTER ROLE %I NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS INHERIT',
+                       v_papel);
+
+        FOR v_grupo IN
+            SELECT g.rolname AS grupo, gr.rolname AS quem_deu
+              FROM pg_auth_members am
+              JOIN pg_roles g  ON g.oid  = am.roleid
+              JOIN pg_roles gr ON gr.oid = am.grantor
+             WHERE am.member = (SELECT oid FROM pg_roles WHERE rolname = v_papel)
+        LOOP
+            EXECUTE format('REVOKE %I FROM %I GRANTED BY %I', v_grupo.grupo, v_papel, v_grupo.quem_deu);
+        END LOOP;
     END LOOP;
 
-    FOREACH v_papel IN ARRAY ARRAY['aluno_26000001', 'aluno_26000012'] LOOP
-        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = v_papel) THEN
-            EXECUTE format('CREATE ROLE %I NOLOGIN IN ROLE aluno', v_papel);
-        END IF;
-    END LOOP;
+    GRANT aluno TO aluno_26000001, aluno_26000012;
 END $$;
 
 SELECT r.rolname AS papel, r.rolcanlogin AS pode_conectar,
@@ -87,19 +101,13 @@ SELECT r.rolname AS papel, r.rolcanlogin AS pode_conectar,
 -- Função nasce com EXECUTE liberado para PUBLIC no PostgreSQL: o REVOKE em FUNCTIONS fecha isso, e o
 -- ALTER DEFAULT PRIVILEGES fecha também as funções que o bd2 criar daqui para frente.
 
-REVOKE ALL ON SCHEMA projeto_bd2                       FROM PUBLIC, aluno, secretaria, coordenacao;
-REVOKE ALL ON ALL TABLES    IN SCHEMA projeto_bd2      FROM PUBLIC, aluno, secretaria, coordenacao;
-REVOKE ALL ON ALL SEQUENCES IN SCHEMA projeto_bd2      FROM PUBLIC, aluno, secretaria, coordenacao;
-REVOKE ALL ON ALL FUNCTIONS IN SCHEMA projeto_bd2      FROM PUBLIC, aluno, secretaria, coordenacao;
-ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS   FROM PUBLIC;
+-- O REVOKE na tabela tira junto as permissões dadas coluna a coluna (conferido no PostgreSQL 16).
 
--- REVOKE ALL ON ALL TABLES não tira permissão dada coluna a coluna: estas saem uma a uma
--- (senão rodar o script de novo deixaria sobrar permissão antiga).
-REVOKE SELECT (id_professor, nm_professor, ds_titulacao) ON tb_professor FROM aluno;
-REVOKE SELECT (id_aluno, cd_matricula, nm_aluno, id_curso, id_curriculo, dt_ingresso, ic_ativo)
-    ON tb_aluno FROM coordenacao;
-REVOKE INSERT (id_matricula, ds_acao, ds_detalhe) ON tb_log_matricula FROM secretaria;
-REVOKE UPDATE (ds_status) ON tb_matricula FROM secretaria;
+REVOKE ALL ON SCHEMA projeto_bd2                  FROM PUBLIC, aluno, secretaria, coordenacao, aluno_26000001, aluno_26000012;
+REVOKE ALL ON ALL TABLES    IN SCHEMA projeto_bd2 FROM PUBLIC, aluno, secretaria, coordenacao, aluno_26000001, aluno_26000012;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA projeto_bd2 FROM PUBLIC, aluno, secretaria, coordenacao, aluno_26000001, aluno_26000012;
+REVOKE ALL ON ALL FUNCTIONS IN SCHEMA projeto_bd2 FROM PUBLIC, aluno, secretaria, coordenacao, aluno_26000001, aluno_26000012;
+ALTER DEFAULT PRIVILEGES REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -131,6 +139,8 @@ GRANT UPDATE (ds_status) ON tb_matricula TO secretaria;     -- na matrícula só
 -- O gatilho de auditoria roda com o usuário que alterou a matrícula, então a secretaria precisa de INSERT no log.
 -- GRANT por coluna: ela não informa nm_usuario nem dt_ocorrencia, que vêm do DEFAULT (CURRENT_USER e
 -- CURRENT_TIMESTAMP). Assim ninguém grava o log em nome de outra pessoa nem com outra data.
+-- E o INSERT só vale vindo do gatilho: INSERT direto é recusado pelo trg_log_so_pelo_gatilho
+-- (administracao_auditoria_v1.sql), então ninguém inventa uma linha de log.
 GRANT INSERT (id_matricula, ds_acao, ds_detalhe) ON tb_log_matricula TO secretaria;
 
 -- COORDENAÇÃO: acompanha indicadores e históricos, não altera nada.
@@ -170,41 +180,47 @@ ALTER TABLE tb_aluno     FORCE  ROW LEVEL SECURITY;
 ALTER TABLE tb_matricula FORCE  ROW LEVEL SECURITY;
 ALTER TABLE tb_historico FORCE  ROW LEVEL SECURITY;
 
+-- Apaga TODAS as policies das três tabelas, inclusive as que alguém criou à mão com outro nome: policies que
+-- liberam linha se somam (basta uma liberar), então uma policy esquecida abriria o RLS.
+DO $$
+DECLARE
+    v_pol RECORD;
+BEGIN
+    FOR v_pol IN SELECT policyname, tablename FROM pg_policies
+                  WHERE schemaname = 'projeto_bd2' AND tablename IN ('tb_aluno', 'tb_matricula', 'tb_historico')
+    LOOP
+        EXECUTE format('DROP POLICY %I ON projeto_bd2.%I', v_pol.policyname, v_pol.tablename);
+    END LOOP;
+END $$;
+
 -- tb_aluno -------------------------------------------------------------------------------------------------------------
-DROP POLICY IF EXISTS pol_aluno_proprio_cadastro ON tb_aluno;
 CREATE POLICY pol_aluno_proprio_cadastro ON tb_aluno
     FOR SELECT TO aluno
     USING (cd_matricula = fn_matricula_do_usuario());
 
-DROP POLICY IF EXISTS pol_secretaria_aluno ON tb_aluno;
 CREATE POLICY pol_secretaria_aluno ON tb_aluno
     FOR ALL TO secretaria
     USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS pol_coordenacao_aluno ON tb_aluno;
 CREATE POLICY pol_coordenacao_aluno ON tb_aluno
     FOR SELECT TO coordenacao
     USING (true);
 
 -- tb_matricula ---------------------------------------------------------------------------------------------------------
-DROP POLICY IF EXISTS pol_aluno_proprias_matriculas ON tb_matricula;
 CREATE POLICY pol_aluno_proprias_matriculas ON tb_matricula
     FOR SELECT TO aluno
     USING (id_aluno = (SELECT a.id_aluno FROM tb_aluno a WHERE a.cd_matricula = fn_matricula_do_usuario()));
 
-DROP POLICY IF EXISTS pol_secretaria_matricula ON tb_matricula;
 CREATE POLICY pol_secretaria_matricula ON tb_matricula
     FOR ALL TO secretaria
     USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS pol_coordenacao_matricula ON tb_matricula;
 CREATE POLICY pol_coordenacao_matricula ON tb_matricula
     FOR SELECT TO coordenacao
     USING (true);
 
 -- tb_historico ---------------------------------------------------------------------------------------------------------
 -- O histórico não tem id_aluno: chega no aluno pela matrícula.
-DROP POLICY IF EXISTS pol_aluno_proprio_historico ON tb_historico;
 CREATE POLICY pol_aluno_proprio_historico ON tb_historico
     FOR SELECT TO aluno
     USING (id_matricula IN (SELECT m.id_matricula
@@ -212,12 +228,10 @@ CREATE POLICY pol_aluno_proprio_historico ON tb_historico
                               JOIN tb_aluno a ON a.id_aluno = m.id_aluno
                              WHERE a.cd_matricula = fn_matricula_do_usuario()));
 
-DROP POLICY IF EXISTS pol_secretaria_historico ON tb_historico;
 CREATE POLICY pol_secretaria_historico ON tb_historico
     FOR ALL TO secretaria
     USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS pol_coordenacao_historico ON tb_historico;
 CREATE POLICY pol_coordenacao_historico ON tb_historico
     FOR SELECT TO coordenacao
     USING (true);
