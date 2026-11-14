@@ -1,7 +1,8 @@
 /*
 Autor: Arthur Coupê - Administração e Operação
-Objetivo: (1) auditoria automática das matrículas: um gatilho (trigger) grava em tb_log_matricula cada INSERT,
-              UPDATE e DELETE feito em tb_matricula, com a linha ANTES e DEPOIS da mudança em JSONB;
+Objetivo: (1) auditoria automática das matrículas e das notas: um gatilho (trigger) grava em tb_log_matricula cada
+              INSERT, UPDATE e DELETE feito em tb_matricula e em tb_historico, com a linha ANTES e DEPOIS em JSONB.
+              Só o gatilho grava no log: INSERT feito direto na tabela é recusado (ninguém inventa linha de log);
           (2) BÔNUS do Marco 2 (JSONB com índice GIN): índice GIN na coluna ds_detalhe do log, com o ganho medido
               por EXPLAIN (ANALYZE, BUFFERS) antes e depois.
 
@@ -28,10 +29,14 @@ SET search_path TO projeto_bd2, public;
 -- BLOCO 1 - GATILHO DE AUDITORIA
 -- AFTER ... FOR EACH ROW: roda depois de cada linha alterada, quando a mudança já passou por todas as restrições.
 -- Se a transação da matrícula der ROLLBACK, o registro do log some junto: o log nunca mostra o que não aconteceu.
+-- O mesmo gatilho vigia tb_matricula e tb_historico (as notas): as duas têm id_matricula, e "tabela" no JSON diz
+-- de qual veio a mudança.
 -- nm_usuario e dt_ocorrencia vêm do DEFAULT da tabela (CURRENT_USER e CURRENT_TIMESTAMP).
 -- A função roda com as permissões de quem alterou a matrícula (não é SECURITY DEFINER): é assim que o
 -- CURRENT_USER do log mostra quem fez. Por isso a secretaria recebe INSERT no log (e só INSERT: ninguém além do
 -- dono edita ou apaga o log), ver administracao_seguranca_v1.sql.
+-- usuario_sessao: o usuário que conectou no banco. Se a funcionária maria conecta e faz SET ROLE secretaria, o
+-- nm_usuario grava "secretaria" e o usuario_sessao grava "maria": o log diz o papel e a pessoa.
 -- SET search_path: o gatilho acha tb_log_matricula mesmo quando quem alterou a matrícula não fez
 -- "SET search_path TO projeto_bd2" antes (sem isso o UPDATE falha com "relation tb_log_matricula does not exist").
 
@@ -42,7 +47,8 @@ BEGIN
     INSERT INTO tb_log_matricula (id_matricula, ds_acao, ds_detalhe)
     VALUES (COALESCE(NEW.id_matricula, OLD.id_matricula),
             TG_OP,                                              -- 'INSERT', 'UPDATE' ou 'DELETE'
-            jsonb_build_object('antes', to_jsonb(OLD), 'depois', to_jsonb(NEW)));
+            jsonb_build_object('tabela', TG_TABLE_NAME, 'antes', to_jsonb(OLD), 'depois', to_jsonb(NEW),
+                               'usuario_sessao', session_user));
     RETURN NULL;                                                -- num gatilho AFTER o retorno é ignorado
 END $$;
 
@@ -50,6 +56,31 @@ DROP TRIGGER IF EXISTS trg_log_matricula ON tb_matricula;
 CREATE TRIGGER trg_log_matricula
     AFTER INSERT OR UPDATE OR DELETE ON tb_matricula
     FOR EACH ROW EXECUTE FUNCTION fn_log_matricula();
+
+DROP TRIGGER IF EXISTS trg_log_historico ON tb_historico;
+CREATE TRIGGER trg_log_historico
+    AFTER INSERT OR UPDATE OR DELETE ON tb_historico
+    FOR EACH ROW EXECUTE FUNCTION fn_log_matricula();
+
+-- Só o gatilho grava no log. A secretaria precisa de INSERT no log (o gatilho roda com o usuário dela), e sem esta
+-- trava ela poderia fazer um INSERT direto com um "antes" e "depois" inventados.
+-- pg_trigger_depth() = quantos gatilhos estão rodando um dentro do outro. Linha vinda do trg_log_matricula chega
+-- aqui com 2 (aquele gatilho + este); INSERT direto chega com 1 e é recusado.
+-- Superusuário passa (a carga inicial do BLOCO 2 é dele, e superusuário poderia apagar esta trava de qualquer jeito).
+CREATE OR REPLACE FUNCTION fn_log_so_pelo_gatilho() RETURNS TRIGGER
+LANGUAGE plpgsql SET search_path = projeto_bd2, pg_temp AS $$
+BEGIN
+    IF pg_trigger_depth() < 2 AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user) THEN
+        RAISE EXCEPTION 'tb_log_matricula so recebe linha do gatilho de auditoria (usuario %)', current_user
+              USING ERRCODE = 'insufficient_privilege';
+    END IF;
+    RETURN NEW;
+END $$;
+
+DROP TRIGGER IF EXISTS trg_log_so_pelo_gatilho ON tb_log_matricula;
+CREATE TRIGGER trg_log_so_pelo_gatilho
+    BEFORE INSERT ON tb_log_matricula
+    FOR EACH ROW EXECUTE FUNCTION fn_log_so_pelo_gatilho();
 
 -- Teste do gatilho (BEGIN ... ROLLBACK: nada fica gravado): tranca uma matrícula ativa e confere o log
 BEGIN;
@@ -73,7 +104,7 @@ ROLLBACK;
 
 INSERT INTO tb_log_matricula (id_matricula, ds_acao, dt_ocorrencia, nm_usuario, ds_detalhe)
 SELECT m.id_matricula, 'INSERT', m.dt_matricula, 'carga_inicial',
-       jsonb_build_object('antes', NULL, 'depois', to_jsonb(m))
+       jsonb_build_object('tabela', 'tb_matricula', 'antes', NULL, 'depois', to_jsonb(m))
   FROM tb_matricula m
  WHERE NOT EXISTS (SELECT 1 FROM tb_log_matricula l
                     WHERE l.id_matricula = m.id_matricula AND l.ds_acao = 'INSERT');
