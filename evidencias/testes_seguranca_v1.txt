@@ -1,0 +1,89 @@
+EVIDENCIAS - TESTES DE SEGURANCA (papeis, GRANT/REVOKE e RLS)
+Saida do sql/administracao_seguranca_testes_v1.sql, gerada em 14/11/2026 20:09 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1),
+banco criado do zero com os scripts na ordem do README. Esperado: 29 OK e nenhum FALHOU.
+
+########## PARTE 1 - demonstracao (aba Data Output) ##########
+ quem_sou | cd_matricula | disciplinas_no_historico 
+----------+--------------+--------------------------
+ bd2      | 26000001     |                        4
+ bd2      | 26000012     |                       22
+(2 rows)
+
+    quem_sou    | cd_matricula | disciplinas_no_historico 
+----------------+--------------+--------------------------
+ aluno_26000012 | 26000012     |                       22
+(1 row)
+
+ quem_sou | id_aluno | cd_matricula | nm_aluno | cd_curso | aa_periodo | cd_semestre | ds_periodo | cd_disciplina | nm_disciplina | qt_ch_total | cd_turma | ds_status | qt_nota_a1 | qt_nota_a2 | qt_nota_p3 | qt_media_final | pc_frequencia | ds_situacao 
+----------+----------+--------------+----------+----------+------------+-------------+------------+---------------+---------------+-------------+----------+-----------+------------+------------+------------+----------------+---------------+-------------
+(0 rows)
+
+    quem_sou    | ds_periodo | cd_disciplina | cd_turma | qt_vagas | qt_ocupadas | qt_livres | ds_situacao_vagas 
+----------------+------------+---------------+----------+----------+-------------+-----------+-------------------
+ aluno_26000012 | 2026/2     | CCO072        | A        |       35 |          34 |         1 | ultimas vagas
+ aluno_26000012 | 2026/2     | CCO072        | B        |       45 |          34 |        11 | com vagas
+ aluno_26000012 | 2026/2     | CCO072        | C        |       45 |          35 |        10 | com vagas
+(3 rows)
+
+
+########## PARTE 2 - testes automaticos (aba Messages) ##########
+OK (teste 1): aluno_26000012 ve o proprio historico inteiro (22 linhas, 1 aluno)
+OK barrado (teste 2): historico do 26000001 existe (4 linhas) e o aluno_26000012 ve 0 historicos e 0 matriculas dele
+OK barrado (teste 3): aluno_26000012 le tb_aluno direto e ve so 1 aluno (ele)
+OK (teste 4): aluno_26000001 ve o proprio historico (4 linhas, 1 aluno)
+OK (teste 5): aluno ve 34 vagas ocupadas na CCO072 2026/2 A, mesmo numero que o bd2
+OK barrado (teste 6): aluno nao altera a propria nota: permission denied for table tb_historico
+OK barrado (teste 7): aluno nao le o log: permission denied for table tb_log_matricula
+OK barrado (teste 8): aluno nao le mv_indicadores: permission denied for materialized view mv_indicadores
+OK barrado (teste 9): aluno nao atualiza os indicadores: permission denied for function fn_atualizar_indicadores
+OK (teste 10): aluno le nome e titulacao do professor
+OK barrado (teste 11): aluno nao le e-mail nem matricula do professor
+OK barrado (teste 12): aluno nao inclui matricula: permission denied for table tb_matricula
+OK (teste 13): secretaria trancou a matricula 1 e o log gravou: papel secretaria, conexao bd2, ativa -> trancada
+OK (teste 14): secretaria matriculou o 26000001 na CCO072 2026/2 A
+OK (teste 15): secretaria lancou a nota A2 do historico 1 e o log gravou: vazia -> 8.00
+OK barrado (teste 16): secretaria nao apaga matricula (so tranca ou cancela): permission denied for table tb_matricula
+OK barrado (teste 17): secretaria so altera o status da matricula: permission denied for table tb_matricula
+OK barrado (teste 18): ninguem grava log em nome de outro: permission denied for table tb_log_matricula
+OK barrado (teste 19): log nao aceita INSERT direto: tb_log_matricula so recebe linha do gatilho de auditoria (usuario secretaria)
+OK barrado (teste 20): log nao se edita: permission denied for table tb_log_matricula
+OK (teste 21): coordenacao le 20 linhas de indicadores e atualizou em 2026-11-14 23:07:34.533372+00
+OK (teste 22): coordenacao ve o historico de 1988 alunos
+OK (teste 23): coordenacao le nome e matricula do aluno
+OK barrado (teste 24): coordenacao nao le CPF, e-mail nem nascimento do aluno
+OK barrado (teste 25): coordenacao nao altera nota: permission denied for table tb_historico
+OK barrado (teste 26): usuario sem papel nao le nada: permission denied for schema projeto_bd2
+OK (teste 27): permissoes (tabelas, colunas, sequences, funcoes e schema) batem exatamente com a matriz de acesso
+OK (teste 28): papeis sem LOGIN, SUPERUSER e BYPASSRLS, e os alunos de teste so no grupo aluno
+OK (teste 29): RLS ligado e forcado nas 3 tabelas, com exatamente as 9 policies da matriz
+
+Total OK: 29 | Total FALHOU: 0
+
+########## prova de que os testes pegam erro (mutantes) ##########
+Cada linha: uma permissao, papel, policy ou gatilho estragado de proposito, os testes que acusaram FALHOU,
+o script do projeto que desfez o estrago e quantos testes deram OK depois (esperado 29).
+ERROR no fim da linha: o estrago deixou uma acao proibida passar e o efeito dela parou o script (ja tinha FALHOU antes).
+A_historico_true => FALHOU (teste 2) | restaurado com administracao_seguranca_v1.sql: 29 OK
+B_matricula_true => FALHOU (teste 2) | restaurado com administracao_seguranca_v1.sql: 29 OK
+C_cadastro_true => FALHOU (teste 3) | restaurado com administracao_seguranca_v1.sql: 29 OK
+D_rls_off_historico => FALHOU (teste 2) FALHOU (teste 29) | restaurado com administracao_seguranca_v1.sql: 29 OK
+E_delete_secretaria => FALHOU (teste 16) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+F_log_aluno => FALHOU (teste 7) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+G_vagas_invoker => FALHOU (teste 5) | restaurado com ALTER VIEW vw_vagas SET (security_invoker = false) (o que o administracao_views_v1.sql cria): 29 OK
+H_cpf_coordenacao => FALHOU (teste 24) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+I_update_coluna_toda => FALHOU (teste 17) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+J_log_nm_usuario => FALHOU (teste 18) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+K_schema_public => FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+L_log_sem_trava => FALHOU (teste 19) | restaurado com administracao_auditoria_v1.sql + administracao_seguranca_v1.sql: 29 OK
+M_email_coordenacao => FALHOU (teste 24) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+N_execute_public => FALHOU (teste 9) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+O_aluno_bypassrls => FALHOU (teste 1) FALHOU (teste 2) FALHOU (teste 3) FALHOU (teste 28) | restaurado com administracao_seguranca_v1.sql: 29 OK
+P_aluno_na_secretaria => FALHOU (teste 1) FALHOU (teste 2) FALHOU (teste 3) FALHOU (teste 6) FALHOU (teste 7) FALHOU (teste 8) FALHOU (teste 11) FALHOU (teste 12) ERROR:  duplicate key value violates unique constraint "uq_matricula_aluno_turma" | restaurado com administracao_seguranca_v1.sql: 29 OK
+Q_policy_extra_update => FALHOU (teste 29) | restaurado com administracao_seguranca_v1.sql: 29 OK
+R_aluno_sem_nome_professor => FALHOU (teste 10) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+S_nota_sem_log => FALHOU (teste 15) | restaurado com administracao_auditoria_v1.sql + administracao_seguranca_v1.sql: 29 OK
+T_log_retroativo => FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+U_sequence_aluno => FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+V_create_schema => FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+W_grant_direto_aluno => FALHOU (teste 7) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
+X_policy_extra_publica => FALHOU (teste 3) FALHOU (teste 29) | restaurado com administracao_seguranca_v1.sql: 29 OK

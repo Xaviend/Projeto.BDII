@@ -1,0 +1,3 @@
+# Backup do banco (docs/backup_restauracao.md): dado de banco não vai para o Git
+backup/
+*.dump
