@@ -9,13 +9,13 @@ Este é o procedimento de backup do schema `projeto_bd2` (banco `matricula`) e d
 3. erro humano: matrículas canceladas e linhas do log apagadas, e volta ao backup;
 4. servidor novo, vazio, recebendo só os arquivos de backup.
 
-Nas quatro, a impressão digital (`sql/administracao_backup_conferencia_v1.sql`) deu igual à de antes do backup, e os 22 testes de segurança (`sql/administracao_seguranca_testes_v1.sql`) passaram depois da restauração.
+Nas quatro, a impressão digital (`sql/administracao_backup_conferencia_v1.sql`) deu igual à de antes do backup, e os 29 testes de segurança (`sql/administracao_seguranca_testes_v1.sql`) passaram depois da restauração.
 
 ## O que é o quê
 
 | Arquivo | O que guarda | Comando |
 |---|---|---|
-| `matricula.dump` | o schema `projeto_bd2` inteiro: tabelas, dados, índices, views, materialized view, funções, gatilho, policies de RLS e GRANTs | `pg_dump -n projeto_bd2 -Fc` |
+| `matricula.dump` | o schema `projeto_bd2` inteiro: tabelas, dados, índices, views, materialized view, funções, gatilhos, policies de RLS e GRANTs | `pg_dump -n projeto_bd2 -Fc` |
 | `papeis.sql` | os papéis (aluno, secretaria, coordenacao, aluno_26000001, aluno_26000012), **sem senha** | `pg_dumpall --roles-only --no-role-passwords` |
 
 Por que dois arquivos: papel (role) não pertence a um banco, pertence ao servidor inteiro. O `pg_dump` guarda os GRANTs e as policies que citam os papéis, mas não cria os papéis. No mesmo servidor eles já existem. Num servidor novo, o `papeis.sql` roda antes.
@@ -144,7 +144,7 @@ docker exec bd2_postgres sh -c "pg_restore -U bd2 -d matricula --exit-on-error /
 ## 4. Conferir depois
 
 1. Impressão digital igual à do passo 1 (a linha `>>> IMPRESSAO DIGITAL GERAL`).
-2. `sql/administracao_seguranca_testes_v1.sql` com F5: 22 linhas `OK` e nenhuma `FALHOU` na aba Messages. Isso prova que os papéis, os GRANTs e o RLS voltaram junto com os dados.
+2. `sql/administracao_seguranca_testes_v1.sql` com F5: 29 linhas `OK` e nenhuma `FALHOU` na aba Messages. Isso prova que os papéis, os GRANTs e o RLS voltaram junto com os dados.
 
 O que a impressão digital compara: quantidade de linhas e md5 do conteúdo de cada tabela e da materialized view, e a estrutura (views, índices, policies, RLS ligado, gatilho, funções e permissões). A coluna `dt_atualizacao` da `mv_indicadores` fica fora, porque a restauração recalcula a materialized view e essa coluna guarda a hora do cálculo.
 

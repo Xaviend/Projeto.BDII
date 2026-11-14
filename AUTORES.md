@@ -29,8 +29,8 @@ Banco de Dados II (CCO072), prof. Rodrigo Gonçalves. Cada um cuidou de uma fren
 
 - `sql/consultas_v1.sql`: as 10 consultas comentadas do Marco 1
 - `sql/administracao_views_v1.sql`: views de oferta, vagas e histórico e a materialized view de indicadores, com a política de refresh e o ganho medido
-- `sql/administracao_auditoria_v1.sql`: gatilho de auditoria das matrículas em JSONB e índice GIN (bônus)
+- `sql/administracao_auditoria_v1.sql`: gatilho de auditoria das matrículas e das notas em JSONB, trava contra INSERT direto no log e índice GIN (bônus)
 - `sql/administracao_seguranca_v1.sql`: papéis, GRANT/REVOKE (inclusive por coluna) e RLS
-- `sql/administracao_seguranca_testes_v1.sql`: 22 testes de segurança, positivos e negativos
+- `sql/administracao_seguranca_testes_v1.sql`: 29 testes de segurança, positivos, negativos e a lista exata do permitido
 - `sql/administracao_backup_conferencia_v1.sql` e `docs/backup_restauracao.md`: backup, restauração e a impressão digital que prova a restauração
 - `evidencias/explain_administracao_v1.txt`, `evidencias/testes_seguranca_v1.txt`, `evidencias/backup_restauracao_v1.txt`

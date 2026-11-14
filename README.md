@@ -37,9 +37,9 @@ Rodar nesta ordem, todos no banco `matricula`:
 | - | `sql/concorrencia_limpeza_v1.sql` | Apaga as matrículas dos testes e volta a turma pra 1 vaga livre. Roda antes de cada teste de concorrência (ver "Transações e concorrência" abaixo). |
 | 9 | `sql/consultas_v1.sql` | As 10 consultas comentadas do Marco 1 (junção externa com agregação, duas recursivas, ranking com percentil, LAG e mais 5). Só lê. |
 | 10 | `sql/administracao_views_v1.sql` | Cria as views `vw_oferta`, `vw_vagas` e `vw_historico` e a materialized view `mv_indicadores`, e mede o ganho da materialized view com EXPLAIN. |
-| 11 | `sql/administracao_auditoria_v1.sql` | Gatilho que grava em `tb_log_matricula` o antes e o depois (JSONB) de toda mudança de matrícula, e o índice GIN no JSONB (bônus) com EXPLAIN antes e depois. |
+| 11 | `sql/administracao_auditoria_v1.sql` | Gatilho que grava em `tb_log_matricula` o antes e o depois (JSONB) de toda mudança de matrícula e de nota, a trava que recusa INSERT direto no log, e o índice GIN no JSONB (bônus) com EXPLAIN antes e depois. |
 | 12 | `sql/administracao_seguranca_v1.sql` | Papéis aluno, secretaria e coordenacao, REVOKE de tudo, GRANT só do necessário e RLS (o aluno só vê o próprio histórico). **Roda por último**: fecha as permissões de tudo que já existe. |
-| 13 | `sql/administracao_seguranca_testes_v1.sql` | 22 testes de segurança (o que pode funciona, o que não pode é barrado). `BEGIN ... ROLLBACK`, não deixa nada no banco. |
+| 13 | `sql/administracao_seguranca_testes_v1.sql` | 29 testes de segurança (o que pode funciona, o que não pode é barrado, e a lista exata de permissões, papéis e policies). `BEGIN ... ROLLBACK`, não deixa nada no banco. |
 | 14 | `sql/administracao_backup_conferencia_v1.sql` | Impressão digital do banco (linhas e md5 de cada tabela e da estrutura) para provar que a restauração do backup ficou igual. Só lê. |
 
 O backup e a restauração são comandos no terminal, não um script do pgAdmin: o passo a passo está em [`docs/backup_restauracao.md`](docs/backup_restauracao.md).
@@ -198,7 +198,7 @@ Salvar os prints em `evidencias/`:
 | `vw_historico` | histórico do aluno com notas, frequência e situação | `security_invoker`: o RLS vale dentro da view, cada aluno vê só o dele |
 | `mv_indicadores` | aprovação, reprovação, média e frequência por curso e semestre | materialized view: o resultado fica gravado |
 
-Política de atualização da `mv_indicadores`: `REFRESH MATERIALIZED VIEW CONCURRENTLY` toda noite e depois do lançamento de notas, pela função `fn_atualizar_indicadores()` (a coordenação executa sem ser dona da view). O `CONCURRENTLY` não trava a leitura durante o refresh e precisa do índice único `uq_mv_indicadores`. Não tem refresh por gatilho: nota muda o tempo todo durante o semestre e indicador de gestão não precisa ser do segundo. A coluna `dt_atualizacao` mostra de quando são os números. Ganho medido: 34,6 ms e 426 páginas calculando na hora, 0,014 ms e 1 página lendo da materialized view.
+Política de atualização da `mv_indicadores`: `REFRESH MATERIALIZED VIEW CONCURRENTLY` toda noite e depois do lançamento de notas, pela função `fn_atualizar_indicadores()` (a coordenação executa sem ser dona da view). O `CONCURRENTLY` não trava a leitura durante o refresh e precisa do índice único `uq_mv_indicadores`. Não tem refresh por gatilho: nota muda o tempo todo durante o semestre e indicador de gestão não precisa ser do segundo. A coluna `dt_atualizacao` mostra de quando são os números. Ganho medido: 30,4 ms e 426 páginas calculando na hora, 0,015 ms e 1 página lendo da materialized view.
 
 ### Segurança (`administracao_seguranca_v1.sql`)
 
@@ -211,14 +211,23 @@ Negado por padrão: REVOKE de tudo para todos e GRANT só do que cada papel prec
 | `mv_indicadores` | - | lê | lê e atualiza |
 | tb_aluno | só o próprio (RLS) | lê, inclui, altera | lê sem CPF, e-mail e nascimento |
 | tb_matricula | só as próprias (RLS) | lê, inclui, altera só o status | lê |
-| tb_log_matricula | - | lê e inclui (pelo gatilho), sem escolher usuário e data | lê |
+| tb_log_matricula | - | lê; inclui só pelo gatilho, sem escolher usuário e data | lê |
+| funções | `fn_matricula_do_usuario` (usada pelo RLS) | - | `fn_atualizar_indicadores` |
 | DELETE | - | - | - |
 
-Cada aluno tem um papel `aluno_<matrícula>` (para a demonstração: `aluno_26000001` e `aluno_26000012`). A policy compara a matrícula da linha com o usuário conectado. O `bd2` é superusuário e passa por cima do RLS, por isso os testes trocam de papel com `SET ROLE`. Os 22 testes, os mutantes que provam que eles pegam erro e a saída estão em `evidencias/testes_seguranca_v1.txt`.
+Cada aluno tem um papel `aluno_<matrícula>` (para a demonstração: `aluno_26000001` e `aluno_26000012`). A policy compara a matrícula da linha com o usuário conectado. O `bd2` é superusuário e passa por cima do RLS, por isso os testes trocam de papel com `SET ROLE`.
+
+Rodar o script de novo desfaz mudança feita à mão: os papéis voltam sem LOGIN, SUPERUSER e BYPASSRLS e saem de grupo errado, as permissões saem todas antes dos GRANT e todas as policies das três tabelas são apagadas antes de criar as nove da matriz.
+
+Os 29 testes, os 24 mutantes que provam que eles pegam erro e a saída estão em `evidencias/testes_seguranca_v1.txt`. Os testes 27 a 29 comparam o banco com a lista exata do permitido: permissão de tabela e de coluna, sequence, função e schema; atributos e grupos dos papéis; e as policies.
 
 ### Auditoria e bônus JSONB com GIN (`administracao_auditoria_v1.sql`)
 
-O gatilho `trg_log_matricula` grava cada INSERT, UPDATE e DELETE de `tb_matricula` em `tb_log_matricula`, com a linha antes e depois em JSONB e o usuário que fez (`CURRENT_USER`). O índice GIN `ix_log_matricula_detalhe` (`jsonb_path_ops`) atende a busca "toda a movimentação de um aluno" (`ds_detalhe @> '{"depois": {"id_aluno": 12}}'`): de 29,5 ms e 802 páginas (leitura da tabela inteira) para 0,07 ms e 4 páginas.
+Os gatilhos `trg_log_matricula` e `trg_log_historico` gravam cada INSERT, UPDATE e DELETE de `tb_matricula` e de `tb_historico` (as notas) em `tb_log_matricula`, com a tabela, a linha antes e depois em JSONB, o papel que fez (`CURRENT_USER`, em `nm_usuario`) e o usuário que conectou (`session_user`, em `usuario_sessao` dentro do JSON). O gatilho `trg_log_so_pelo_gatilho` recusa INSERT feito direto no log: a secretaria precisa de INSERT no log para o gatilho funcionar, e sem essa trava poderia inventar uma linha.
+
+O índice GIN `ix_log_matricula_detalhe` (`jsonb_path_ops`) atende a busca "toda a movimentação de um aluno" (`ds_detalhe @> '{"depois": {"id_aluno": 12}}'`): de 55,0 ms e 896 páginas (leitura da tabela inteira) para 0,057 ms e 5 páginas.
+
+Fica fora do log: mudança no cadastro do aluno (`tb_aluno`), porque o log é por matrícula. A secretaria é o único papel que altera `tb_aluno`.
 
 ### Backup e restauração
 
