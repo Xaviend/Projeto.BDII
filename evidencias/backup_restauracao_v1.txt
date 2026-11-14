@@ -1,5 +1,5 @@
 EVIDENCIAS - BACKUP E RESTAURACAO
-Ensaio de docs/backup_restauracao.md em 14/11/2026 19:43 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1), banco com schema academico
+Ensaio de docs/backup_restauracao.md em 14/11/2026 20:09 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1), banco com schema academico
 simulado ao lado (como o do professor). Impressao digital = sql/administracao_backup_conferencia_v1.sql.
 
 ########## impressao digital ANTES do backup ##########
@@ -13,7 +13,7 @@ dados: tb_curso | 3 | fc935864309755b252df29d1da02733f
 dados: tb_disciplina | 24 | c85402bc2cc977e3032ab02f734ef84d
 dados: tb_feriado | 7 | 40e3532f6de1693f7546f620cfe5512c
 dados: tb_historico | 24577 | 3dec296eac8cfb3aa2c07fe2e031d181
-dados: tb_log_matricula | 25351 | ac3150ff5f1b7e3e1fd0f6dab97191f4
+dados: tb_log_matricula | 25351 | c628e91fb999a1f8e7470b4a82a635f6
 dados: tb_matricula | 24964 | 84d09d25e345ea4b869fbbe8187e21e4
 dados: tb_periodo_letivo | 8 | 0e14e505fa47224bf3adf0132879c647
 dados: tb_pre_requisito | 25 | a41ed90209fec87ec07f65231880f216
@@ -21,25 +21,25 @@ dados: tb_professor | 32 | 50c6733415701814115c0d4469a9946d
 dados: tb_sala | 12 | af7b74e99731e3c3db221079570f4664
 dados: tb_turma | 1536 | fb74a384958b91d63798b9a4a3d8194a
 dados: tb_turma_horario | 1536 | e640eae377c6e7846cb1b7e20ca3886e
-estrutura: funcoes e quem pode executar | 3 | e0b538f6abc6bec08643dc20de29c021
-estrutura: gatilhos | 1 | 046b97e3291aa21afe0b364699214ea1
+estrutura: funcoes e quem pode executar | 4 | a438edb4bc371bc0a5645152026d582c
+estrutura: gatilhos | 3 | ca65783238589bb24b530783d33c9b17
 estrutura: indices | 44 | d409366bd2af18a412b67d22220c6e1d
 estrutura: permissoes (GRANT) em tabelas, colunas e schema | 272 | aaa8f1f742d801505b1b2038513b9652
 estrutura: policies de RLS | 9 | 9152c1d9d5456926c78139116974dd09
 estrutura: tabelas com RLS ligado e forcado | 3 | f75ac5a65306f6e6d187b48b2d376bad
 estrutura: views e materialized views | 4 | 0b19376a5b93a7ddcf98659d0182c1ce
->>> IMPRESSAO DIGITAL GERAL (compare esta) | 80507 | e7c9cddbd1c3b3cc6a7e66d745637cbb
+>>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | fc88764bbfab41f750f1baaf524ccc59
 
 ########## depois de cada restauracao (so a linha geral; o diff de todas as linhas deu vazio) ##########
-caso A, banco separado matricula_restaurada : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80507 | e7c9cddbd1c3b3cc6a7e66d745637cbb
-caso B, schema apagado e restaurado         : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80507 | e7c9cddbd1c3b3cc6a7e66d745637cbb
-caso C, erro humano e volta ao backup       : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80507 | e7c9cddbd1c3b3cc6a7e66d745637cbb
-caso D, servidor novo vazio                 : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80507 | e7c9cddbd1c3b3cc6a7e66d745637cbb
+caso A, banco separado matricula_restaurada : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | fc88764bbfab41f750f1baaf524ccc59
+caso B, schema apagado e restaurado         : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | fc88764bbfab41f750f1baaf524ccc59
+caso C, erro humano e volta ao backup       : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | fc88764bbfab41f750f1baaf524ccc59
+caso D, servidor novo vazio                 : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | fc88764bbfab41f750f1baaf524ccc59
 
 controle (caso C, com o erro e antes de restaurar, tem que ser DIFERENTE):
->>> IMPRESSAO DIGITAL GERAL (compare esta) | 80457 | 0e4616475e3e18f16dfc44e65ea6a66d
+>>> IMPRESSAO DIGITAL GERAL (compare esta) | 80460 | 2760bea277684f0bbc7173e195d7f2c4
 
 banco criado do zero com os scripts na ordem do README, sem backup nenhum (carga deterministica):
->>> IMPRESSAO DIGITAL GERAL (compare esta) | 80507 | e7c9cddbd1c3b3cc6a7e66d745637cbb
+>>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | fc88764bbfab41f750f1baaf524ccc59
 
-testes de seguranca depois da restauracao: 22 OK, nenhum FALHOU (casos B, C e D)
+testes de seguranca depois da restauracao: 29 OK, nenhum FALHOU (casos B, C e D)
