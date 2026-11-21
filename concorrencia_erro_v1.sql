@@ -44,7 +44,7 @@ SELECT id_aluno, current_setting('projeto_bd2.turma_alvo')::int, now(), 'ativa':
   FROM projeto_bd2.tb_aluno WHERE cd_matricula = current_setting('projeto_bd2.aluno_b');
 COMMIT;
 
--- PASSO 5 - qualquer aba: PROVA DO ERRO (esperado: ocupadas = 46, vagas_livres = -1)
+-- PASSO 5 - qualquer aba: PROVA DO ERRO (esperado: ocupadas = 36, vagas_livres = -1)
 SELECT t.qt_vagas, count(m.id_matricula) AS ocupadas, t.qt_vagas - count(m.id_matricula) AS vagas_livres
   FROM projeto_bd2.tb_turma t
   LEFT JOIN projeto_bd2.tb_matricula m ON m.id_turma = t.id_turma AND m.ds_status = 'ativa'

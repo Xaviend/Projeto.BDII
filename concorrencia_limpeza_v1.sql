@@ -31,7 +31,7 @@ DELETE FROM projeto_bd2.tb_matricula
                     WHERE d.cd_disciplina = 'CCO072' AND p.aa_periodo = 2026 AND p.cd_semestre = 2
                       AND t.cd_turma = 'A');
 
--- Conferência (esperado: ocupadas = 44, vagas_livres = 1)
+-- Conferência (esperado: ocupadas = 34, vagas_livres = 1)
 SELECT t.qt_vagas, count(m.id_matricula) AS ocupadas, t.qt_vagas - count(m.id_matricula) AS vagas_livres
   FROM projeto_bd2.tb_turma t
   JOIN projeto_bd2.tb_disciplina d     ON d.id_disciplina = t.id_disciplina AND d.cd_disciplina = 'CCO072'

@@ -51,7 +51,7 @@ SELECT a.id_aluno, t.id_turma, now(), 'ativa'::projeto_bd2.tp_status_matricula
                       WHERE m.id_turma = t.id_turma AND m.ds_status = 'ativa');
 COMMIT;   -- não inseriu nada: aluno B fica sem a vaga, mas a turma não estoura
 
--- PASSO 6 - qualquer aba: PROVA (esperado: ocupadas = 45, vagas_livres = 0)
+-- PASSO 6 - qualquer aba: PROVA (esperado: ocupadas = 35, vagas_livres = 0)
 SELECT t.qt_vagas, count(m.id_matricula) AS ocupadas, t.qt_vagas - count(m.id_matricula) AS vagas_livres
   FROM projeto_bd2.tb_turma t
   LEFT JOIN projeto_bd2.tb_matricula m ON m.id_turma = t.id_turma AND m.ds_status = 'ativa'
