@@ -23,7 +23,7 @@ Banco de Dados II (CCO072), prof. Rodrigo Gonçalves. Cada um cuidou de uma fren
 - `sql/05b_concorrencia_erro_v1.sql`: a anomalia da última vaga no READ COMMITTED
 - `sql/05c_concorrencia_solucao1_for_update_v1.sql`: solução com trava pessimista (`SELECT ... FOR UPDATE`)
 - `sql/05d_concorrencia_solucao2_serializable_v1.sql`: solução com isolamento `SERIALIZABLE` e repetição (erro 40001)
-- prints da demonstração em `evidencias/`
+- `evidencias/concorrencia_duas_abas_v1.txt`: as duas abas passo a passo no erro e nas duas soluções
 
 ## Arthur Coupê: administração e operação
 
@@ -34,3 +34,11 @@ Banco de Dados II (CCO072), prof. Rodrigo Gonçalves. Cada um cuidou de uma fren
 - `sql/10_administracao_seguranca_testes_v1.sql`: 29 testes de segurança, positivos, negativos e a lista exata do permitido
 - `sql/11_administracao_backup_conferencia_v1.sql` e `docs/backup_restauracao.md`: backup, restauração e a impressão digital que prova a restauração
 - `evidencias/explain_administracao_v1.txt`, `evidencias/testes_seguranca_v1.txt`, `evidencias/backup_restauracao_v1.txt`
+
+## Revisão final da entrega (22/11, Arthur)
+
+Arthur conferiu a entrega inteira montando o banco do zero pelo README e fez os ajustes que faltavam:
+
+- trouxe para a main o histórico das branches do Iury e do Eduardo, a versão mais nova do diagrama e o `05a_concorrencia_preparacao_v1.sql`, que só existia na branch do Eduardo;
+- numerou os scripts na ordem de execução e corrigiu os nomes e os números (36 para 35 vagas) nos comentários, no README e aqui;
+- gerou as evidências de índices e de concorrência na rodada do zero e escreveu a comparação entre FOR UPDATE e SERIALIZABLE no README, com as medições X1 a X3.

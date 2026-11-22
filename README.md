@@ -16,31 +16,33 @@ Mais detalhes de quem fez o que no AUTORES.md.
 ## Pastas
 
 - `modelo/` diagrama feito no draw.io
-- `sql/` scripts, na ordem que tem que rodar
-- `evidencias/` resultado do EXPLAIN antes e depois dos índices (gerado pelo `04_indices_v1.sql`), os prints da demonstração de concorrência e as saídas da frente de administração (materialized view, GIN, testes de segurança e backup)
+- `sql/` scripts, numerados na ordem em que têm que rodar
+- `evidencias/` resultado do EXPLAIN antes e depois dos índices (gerado pelo `04_indices_v1.sql`), a saída das duas abas na demonstração de concorrência e as saídas da frente de administração (materialized view, GIN, testes de segurança e backup). Lista completa em "Evidências" no fim deste arquivo
 - `docs/` passo a passo do backup e da restauração
 
 ## Scripts
 
-Rodar nesta ordem, todos no banco `matricula`:
+Rodar na ordem do número do arquivo, todos no banco `matricula`:
 
 | Ordem | Arquivo | O que faz |
 |---|---|---|
-| 1 | `sql/01_modelo_fisico_v1.sql` | Apaga e cria o schema `projeto_bd2` com as 17 tabelas, domínios, enums e restrições. |
-| 2 | `sql/02_testes_restricoes_v1.sql` | Prova que as restrições funcionam: 14 testes que têm que ser barrados. Roda dentro de `BEGIN ... ROLLBACK`, então não deixa nada no banco. Pode pular. |
-| 3 | `sql/03_carga_v1.sql` | Popula o banco com dados de teste (ver "Carga de dados" abaixo). |
-| 4 | `sql/04_indices_v1.sql` | Cria 4 índices (um parcial) e mede o ganho de cada um com `EXPLAIN (ANALYZE, BUFFERS)` (ver "Índices" abaixo). |
-| 5 | `sql/05a_concorrencia_preparacao_v1.sql` | Confere o banco e guarda a turma e os alunos da demonstração da "última vaga". Roda nas DUAS abas. |
-| 6 | `sql/05b_concorrencia_erro_v1.sql` | Reproduz o erro: dois alunos pegam a última vaga e a turma fica com 46 matrículas para 45 vagas. |
-| 7 | `sql/05c_concorrencia_solucao1_for_update_v1.sql` | Solução 1: trava a linha da turma com `SELECT ... FOR UPDATE`. |
-| 8 | `sql/05d_concorrencia_solucao2_serializable_v1.sql` | Solução 2: isolamento `SERIALIZABLE`, o banco derruba uma das transações (erro 40001) e ela é repetida. |
-| - | `sql/05e_concorrencia_limpeza_v1.sql` | Apaga as matrículas dos testes e volta a turma pra 1 vaga livre. Roda antes de cada teste de concorrência (ver "Transações e concorrência" abaixo). |
-| 9 | `sql/06_consultas_v1.sql` | As 10 consultas comentadas do Marco 1 (junção externa com agregação, duas recursivas, ranking com percentil, LAG e mais 5). Só lê. |
-| 10 | `sql/07_administracao_views_v1.sql` | Cria as views `vw_oferta`, `vw_vagas` e `vw_historico` e a materialized view `mv_indicadores`, e mede o ganho da materialized view com EXPLAIN. |
-| 11 | `sql/08_administracao_auditoria_v1.sql` | Gatilho que grava em `tb_log_matricula` o antes e o depois (JSONB) de toda mudança de matrícula e de nota, a trava que recusa INSERT direto no log, e o índice GIN no JSONB (bônus) com EXPLAIN antes e depois. |
-| 12 | `sql/09_administracao_seguranca_v1.sql` | Papéis aluno, secretaria e coordenacao, REVOKE de tudo, GRANT só do necessário e RLS (o aluno só vê o próprio histórico). **Roda por último**: fecha as permissões de tudo que já existe. |
-| 13 | `sql/10_administracao_seguranca_testes_v1.sql` | 29 testes de segurança (o que pode funciona, o que não pode é barrado, e a lista exata de permissões, papéis e policies). `BEGIN ... ROLLBACK`, não deixa nada no banco. |
-| 14 | `sql/11_administracao_backup_conferencia_v1.sql` | Impressão digital do banco (linhas e md5 de cada tabela e da estrutura) para provar que a restauração do backup ficou igual. Só lê. |
+| 01 | `sql/01_modelo_fisico_v1.sql` | Apaga e cria o schema `projeto_bd2` com as 17 tabelas, domínios, enums e restrições. |
+| 02 | `sql/02_testes_restricoes_v1.sql` | Prova que as restrições funcionam: 14 testes que têm que ser barrados. Roda dentro de `BEGIN ... ROLLBACK`, então não deixa nada no banco. Pode pular. |
+| 03 | `sql/03_carga_v1.sql` | Popula o banco com dados de teste (ver "Carga de dados" abaixo). |
+| 04 | `sql/04_indices_v1.sql` | Cria 4 índices (um parcial) e mede o ganho de cada um com `EXPLAIN (ANALYZE, BUFFERS)` (ver "Índices" abaixo). |
+| 05a | `sql/05a_concorrencia_preparacao_v1.sql` | Confere o banco e guarda a turma e os alunos da demonstração da "última vaga". Roda nas DUAS abas. Sem ele os scripts 05b, 05c e 05d dão erro. |
+| 05b | `sql/05b_concorrencia_erro_v1.sql` | Reproduz o erro: dois alunos pegam a última vaga e a turma fica com 36 matrículas para 35 vagas. |
+| 05c | `sql/05c_concorrencia_solucao1_for_update_v1.sql` | Solução 1: trava a linha da turma com `SELECT ... FOR UPDATE`. |
+| 05d | `sql/05d_concorrencia_solucao2_serializable_v1.sql` | Solução 2: isolamento `SERIALIZABLE`, o banco derruba uma das transações (erro 40001) e ela é repetida. |
+| 05e | `sql/05e_concorrencia_limpeza_v1.sql` | Apaga as matrículas dos testes e volta a turma pra 1 vaga livre. Roda antes de cada teste de concorrência (ver "Transações e concorrência" abaixo). |
+| 06 | `sql/06_consultas_v1.sql` | As 10 consultas comentadas do Marco 1 (junção externa com agregação, duas recursivas, ranking com percentil, LAG e mais 5). Só lê. |
+| 07 | `sql/07_administracao_views_v1.sql` | Cria as views `vw_oferta`, `vw_vagas` e `vw_historico` e a materialized view `mv_indicadores`, e mede o ganho da materialized view com EXPLAIN. |
+| 08 | `sql/08_administracao_auditoria_v1.sql` | Gatilho que grava em `tb_log_matricula` o antes e o depois (JSONB) de toda mudança de matrícula e de nota, a trava que recusa INSERT direto no log, e o índice GIN no JSONB (bônus) com EXPLAIN antes e depois. |
+| 09 | `sql/09_administracao_seguranca_v1.sql` | Papéis aluno, secretaria e coordenacao, REVOKE de tudo, GRANT só do necessário e RLS (o aluno só vê o próprio histórico). **Roda depois de todos os que criam objeto**: fecha as permissões de tudo que já existe. |
+| 10 | `sql/10_administracao_seguranca_testes_v1.sql` | 29 testes de segurança (o que pode funciona, o que não pode é barrado, e a lista exata de permissões, papéis e policies). `BEGIN ... ROLLBACK`, não deixa nada no banco. |
+| 11 | `sql/11_administracao_backup_conferencia_v1.sql` | Impressão digital do banco (linhas e md5 de cada tabela e da estrutura) para provar que a restauração do backup ficou igual. Só lê. |
+
+A demonstração de concorrência (05a a 05e) também funciona depois do 11, com o banco completo: foi testada assim, e as matrículas do teste aparecem no log de auditoria do 08.
 
 O backup e a restauração são comandos no terminal, não um script do pgAdmin: o passo a passo está em [`docs/backup_restauracao.md`](docs/backup_restauracao.md).
 
@@ -89,7 +91,7 @@ Tudo do projeto fica no schema projeto_bd2 pra não misturar com o schema academ
 - O `03_carga_v1.sql` e o `04_indices_v1.sql` também podem ser rodados várias vezes (o primeiro zera as tabelas antes de popular, o segundo apaga os índices antes de criar).
 - O `03_carga_v1.sql` tem que rodar antes do `04_indices_v1.sql`.
 - Os scripts de concorrência são diferentes: não é F5 no arquivo todo, é passo a passo em duas abas (ver "Transações e concorrência" abaixo).
-- Os scripts de administração (10 a 14) também podem rodar várias vezes. Se rodar o `07_administracao_views_v1.sql` de novo, roda o `09_administracao_seguranca_v1.sql` depois: a materialized view é recriada e perde as permissões.
+- Os scripts de administração (07 a 11) também podem rodar várias vezes. Se rodar o `07_administracao_views_v1.sql` de novo, roda o `09_administracao_seguranca_v1.sql` depois: a materialized view é recriada e perde as permissões.
 - Os papéis (aluno, secretaria, coordenacao) são do servidor, não do schema: continuam existindo depois do `01_modelo_fisico_v1.sql`. As permissões e as policies somem junto com as tabelas e voltam rodando o `09_administracao_seguranca_v1.sql`.
 
 Antes de fazer consulta tem que colocar:
@@ -139,14 +141,28 @@ Para cada índice o script faz: EXPLAIN antes, CREATE INDEX, EXPLAIN depois da m
 
 Os planos aparecem na aba **Messages** do pgAdmin e o resumo (tempo e páginas lidas, antes e depois) na aba **Data Output**. As páginas lidas (buffers) quase não mudam de uma execução pra outra; o tempo muda um pouco.
 
-### Como gerar as evidências
+### Ganho medido
+
+Banco criado do zero (01 a 04), PostgreSQL 16. Cada consulta roda duas vezes e só a segunda conta (a primeira esquenta o cache). Página = bloco de 8 kB lido.
+
+| # | Plano antes | Plano depois | Tempo | Páginas lidas |
+|---|---|---|---|---|
+| 1 | Index Scan no índice único (id_aluno, id_turma): como id_turma é a 2ª coluna, ele percorre o índice inteiro | Bitmap Index Scan no `ix_matricula_turma_ativa`, direto nas 34 matrículas ativas da turma | 0,152 ms → 0,024 ms (6,3 vezes) | 102 → 31 |
+| 2 | Seq Scan no histórico inteiro (24.577 linhas, 19.174 aprovadas) e ordenação | Index Scan no `ix_historico_situacao_media`, para na 10ª linha | 2,315 ms → 0,012 ms (192,9 vezes) | 197 → 12 |
+| 3 | Seq Scan nas 24.964 matrículas e ordenação | Index Scan Backward no `ix_matricula_dt`, para na 20ª linha | 2,353 ms → 0,012 ms (196,1 vezes) | 184 → 22 |
+| 4 | Seq Scan nos 2000 alunos | Index Scan no `ix_aluno_nm_pattern` | 0,080 ms → 0,012 ms (6,7 vezes) | 31 → 3 |
+
+O índice parcial (só matrículas ativas) ocupa 56 kB. O mesmo índice com todas as matrículas ocuparia 208 kB.
+
+As saídas completas estão em `evidencias/explain_indices_v1.txt` (aba Messages: os planos de antes e de depois) e em `evidencias/resumo_indices_v1.csv` (aba Data Output: o resumo).
+
+### Como gerar as evidências de novo
 
 1. Roda o `01_modelo_fisico_v1.sql`, o `03_carga_v1.sql` e o `04_indices_v1.sql` nessa ordem.
 2. Copia o conteúdo da aba Messages pra `evidencias/explain_indices_v1.txt`.
 3. Exporta o resumo da aba Data Output (botão de download) pra `evidencias/resumo_indices_v1.csv`.
-4. Commit dos dois arquivos.
 
-Gerar de novo na máquina de cada um, porque o tempo depende do computador.
+O tempo muda de um computador pro outro. As páginas lidas e o tipo de plano (Seq Scan, Index Scan) costumam ficar iguais, porque a carga gera sempre os mesmos dados.
 
 ## Transações e concorrência
 
@@ -168,24 +184,34 @@ Se a limpeza der erro dizendo que tem transação aberta, roda `ROLLBACK;` nas o
 
 | Script | ABA 1 | ABA 2 | Resultado final |
 |---|---|---|---|
-| `05b_concorrencia_erro_v1.sql` | matricula | também matricula | 46 ocupadas, `vagas_livres = -1` (o erro) |
-| `05c_concorrencia_solucao1_for_update_v1.sql` | trava a turma e matricula | fica travada esperando, depois `INSERT 0 0` | 45 ocupadas, `vagas_livres = 0` |
-| `05d_concorrencia_solucao2_serializable_v1.sql` | matricula | erro 40001, repete (retry) e dá `INSERT 0 0` | 45 ocupadas, `vagas_livres = 0` |
+A turma começa com 35 vagas e 34 ocupadas (1 livre).
+
+| Script | ABA 1 | ABA 2 | Resultado final |
+|---|---|---|---|
+| `05b_concorrencia_erro_v1.sql` | matricula | também matricula | 36 ocupadas, `vagas_livres = -1` (o erro) |
+| `05c_concorrencia_solucao1_for_update_v1.sql` | trava a turma e matricula | fica travada esperando, depois `INSERT 0 0` | 35 ocupadas, `vagas_livres = 0` |
+| `05d_concorrencia_solucao2_serializable_v1.sql` | matricula | erro 40001, repete (retry) e dá `INSERT 0 0` | 35 ocupadas, `vagas_livres = 0` |
 
 Nas duas soluções as duas abas rodam o mesmo INSERT, que só insere se ainda tiver vaga. Quem decide é o banco, não a pessoa olhando o resultado.
 
-Diferença entre as duas:
+A saída das duas abas, passo a passo, está em `evidencias/concorrencia_duas_abas_v1.txt`. Ela foi gerada com duas sessões abertas ao mesmo tempo (o mesmo que as duas abas do Query Tool), mandando cada passo só para a aba que o script indica.
 
-- **FOR UPDATE (pessimista):** a segunda transação espera na fila. Só funciona se todo lugar que matricula fizer o FOR UPDATE antes de contar as vagas.
-- **SERIALIZABLE (otimista):** ninguém espera, o banco derruba uma das transações e a aplicação tem que repetir. Só funciona se todas as transações de matrícula usarem SERIALIZABLE.
+### Comparação entre as duas soluções
 
-### Evidências
+O que está marcado como "medido" vem do arquivo de evidência acima (as medições X1, X2 e X3 estão no fim dele). O resto vem do manual do PostgreSQL 16 (seções 13.2.3, 13.3.2 e 13.3.4).
 
-Salvar os prints em `evidencias/`:
+| | FOR UPDATE (pessimista) | SERIALIZABLE (otimista) |
+|---|---|---|
+| Como protege | Tranca a linha da turma antes de contar as vagas. Quem chega depois espera. | Ninguém tranca nada. O banco observa o que cada transação leu e escreveu e derruba uma quando o resultado não bate com uma execução uma depois da outra. |
+| Custo | Uma trava na linha da turma, marcada na própria linha: não ocupa memória, mas o manual avisa que isso gera escrita em disco. | O banco guarda travas de leitura (SIReadLock) na memória. Medido: a contagem de vagas da turma A pegou 4 travas (X1). E o trabalho da transação derrubada é feito de novo. |
+| Contenção | Só quem disputa a mesma turma espera. Medido: com a mesma turma a ABA 2 ficou parada até o COMMIT da ABA 1 (05c, passo 3). Com turmas diferentes ninguém esperou (X3). | Ninguém espera (o manual diz que essas travas não bloqueiam). Mas o banco pode derrubar transação que não tinha conflito de verdade. Medido: ABA 1 na turma A e ABA 2 na turma B, e mesmo assim a ABA 2 levou o erro 40001 (X2). |
+| Retentativa | Não precisa. Quem perdeu a vaga recebe `INSERT 0 0` e a aplicação mostra "turma cheia". | Obrigatória. A aplicação precisa pegar o erro 40001 e repetir a transação inteira (05d, passo 5). |
+| Risco | Deadlock se uma transação trancar duas turmas numa ordem e outra na ordem contrária. O banco derruba uma delas. Para evitar: trancar sempre em ordem de `id_turma`. | Mais erro 40001 do que o necessário quando a transação lê muitas linhas da mesma tabela (ver abaixo). |
+| Condição | Todo lugar que matricula tem que fazer o FOR UPDATE antes de contar as vagas. | Todas as transações de matrícula têm que rodar em SERIALIZABLE. |
 
-- `concorrencia_erro_passo2.png` (a ABA 2 vendo 1 vaga) e `concorrencia_erro_passo5.png` (`vagas_livres = -1`)
-- `concorrencia_for_update_passo3.png` (ABA 2 travada), `concorrencia_for_update_passo5.png` (`INSERT 0 0`) e `concorrencia_for_update_passo6.png`
-- `concorrencia_serializable_passo3.png` (erro 40001), `concorrencia_serializable_passo5.png` (`INSERT 0 0`) e `concorrencia_serializable_passo6.png`
+Por que o SERIALIZABLE derrubou matrícula de turma diferente (X2): a contagem de vagas lê as 34 matrículas ativas da turma, e o PostgreSQL guarda no máximo 32 travas de leitura por tabela em cada transação (`max_pred_locks_per_transaction` = 64, dividido por 2 em `max_pred_locks_per_relation`). Passou disso, ele troca as 34 por uma trava na tabela `tb_matricula` inteira (X1 mostra essa trava). Aí qualquer matrícula nova, em qualquer turma, conta como conflito. Numa turma com 25 alunos isso não aconteceu: ficaram 24 travas de página e de linha, sem trava na tabela.
+
+Qual usar na matrícula: o FOR UPDATE. A disputa é sempre pela mesma linha (a turma), a fila só se forma entre quem quer a mesma turma, e a aplicação não precisa de laço de repetição. O SERIALIZABLE vale mais quando há muitas regras e é difícil prever quem conflita com quem. Nesse caso o manual recomenda usar SERIALIZABLE em tudo e tratar o 40001 em um lugar só.
 
 ## Administração e operação
 
@@ -235,6 +261,19 @@ O `08_administracao_auditoria_v1.sql` tem que rodar como superusuário (o `bd2` 
 
 `pg_dump -n projeto_bd2 -Fc` e `pg_restore`, rodando dentro do container. Passo a passo, casos de restauração e perguntas em [`docs/backup_restauracao.md`](docs/backup_restauracao.md). Ensaio com a impressão digital igual antes e depois em `evidencias/backup_restauracao_v1.txt`.
 
+## Evidências
+
+| Arquivo | O que tem | Gerado por |
+|---|---|---|
+| `evidencias/explain_indices_v1.txt` | EXPLAIN (ANALYZE, BUFFERS) de cada consulta antes e depois de cada índice | `04_indices_v1.sql`, aba Messages |
+| `evidencias/resumo_indices_v1.csv` | tempo e páginas lidas antes e depois, e quantas vezes ficou mais rápido | `04_indices_v1.sql`, aba Data Output |
+| `evidencias/concorrencia_duas_abas_v1.txt` | as duas abas passo a passo no erro e nas duas soluções, e as medições X1 a X3 da comparação | `05a` a `05e`, em duas sessões ao mesmo tempo |
+| `evidencias/explain_administracao_v1.txt` | ganho da materialized view e do índice GIN | `07` e `08` |
+| `evidencias/testes_seguranca_v1.txt` | os 29 testes de segurança e os 24 mutantes | `10` |
+| `evidencias/backup_restauracao_v1.txt` | impressão digital igual antes e depois da restauração | `11` e os comandos de `docs/backup_restauracao.md` |
+
+Os três arquivos da administração foram gerados em 14/11, antes de os scripts ganharem número. Por isso eles citam os scripts pelo nome antigo, sem o número na frente (`administracao_views_v1.sql` em vez de `07_administracao_views_v1.sql`). Nesses scripts só mudaram os comentários que citam outros scripts.
+
 ## Sobre o modelo
 
 O diagrama tá em modelo/modelo_logico.v3.drawio (abre no app.diagrams.net). Tem as 17 tabelas com os tipos, PK, FK e a cardinalidade (mín,máx) de cada relacionamento.
@@ -244,7 +283,7 @@ Padrão de nomes:
 - tabelas com tb_, tipos enum com tp_, domínios com dm_ (views vw_, materialized views mv_, funções fn_, triggers trg_, procedures stp_, policies de RLS pol_)
 - toda PK é id_<tabela> e a FK tem o mesmo nome da PK que ela aponta
 - as outras colunas começam com: cd_ código, ds_ descrição, dt_ data, dd_ dia, aa_ ano, hr_ hora, ic_ sim/não, nm_ nome, qt_ valor não monetário, sg_ sigla, pc_ porcentagem, vl_ valor em dinheiro
-- arquivos .sql: minúsculo, com _ e terminando em _v1 (ex: `03_carga_v1.sql`); os da mesma frente começam igual (ex: `concorrencia_...`)
+- arquivos .sql: o número da ordem de execução na frente, minúsculo, com _ e terminando em _v1 (ex: `03_carga_v1.sql`); os da mesma frente têm o mesmo nome depois do número (ex: `05a_concorrencia_...` a `05e_concorrencia_...`)
 
 Tipos que a gente usou:
 
