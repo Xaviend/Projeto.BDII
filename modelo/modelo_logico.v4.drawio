@@ -619,8 +619,13 @@
         <mxCell id="tb_log_matricula.ds_detalhe.t" parent="tb_log_matricula" style="text;html=1;align=right;verticalAlign=middle;spacingRight=8;fillColor=#F8FAFC;strokeColor=#CBD5E1;fontColor=#64748B;fontSize=11;rounded=1;roundedPerimeter=1;" value="JSONB" vertex="1">
           <mxGeometry height="24" width="140" x="200" y="150" as="geometry" />
         </mxCell>
-        <mxCell id="e0" edge="1" parent="1" source="tb_campus.id_cidade" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;" target="tb_cidade.id_cidade">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="e0" edge="1" parent="1" source="tb_campus.id_cidade" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="tb_cidade.id_cidade">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="15" y="452" />
+              <mxPoint x="15" y="232" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="e0s" connectable="0" parent="e0" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(0,N)" vertex="1">
           <mxGeometry relative="1" x="-0.75" as="geometry">
@@ -641,8 +646,8 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="e1t" connectable="0" parent="e1" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(0,1)" vertex="1">
-          <mxGeometry relative="1" x="0.75" as="geometry">
-            <mxPoint y="-10" as="offset" />
+          <mxGeometry relative="1" x="0.3" as="geometry">
+            <mxPoint x="-18" y="0" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="e2" edge="1" parent="1" source="tb_curso.id_campus" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;" target="tb_campus.id_campus">
@@ -676,7 +681,7 @@
         </mxCell>
         <mxCell id="e4s" connectable="0" parent="e4" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(0,N)" vertex="1">
           <mxGeometry relative="1" x="-0.75" as="geometry">
-            <mxPoint y="-10" as="offset" />
+            <mxPoint x="0" y="10" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="e4t" connectable="0" parent="e4" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(1,1)" vertex="1">
@@ -710,7 +715,7 @@
             <mxPoint y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="e7" edge="1" parent="1" source="tb_pre_requisito" style="html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;entryX=0.25;entryY=1;entryDx=0;entryDy=0;exitX=0.75;exitY=0;exitDx=0;exitDy=0;" target="tb_disciplina.ds_ementa.t">
+        <mxCell id="e7" edge="1" parent="1" source="tb_pre_requisito" style="html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;entryX=0.6912;entryY=1;entryDx=0;entryDy=0;exitX=0.75;exitY=0;exitDx=0;exitDy=0;" target="tb_disciplina">
           <mxGeometry relative="1" x="-0.0007" as="geometry" />
         </mxCell>
         <mxCell id="e7s" connectable="0" parent="e7" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(0,N)" vertex="1">
@@ -723,7 +728,7 @@
             <mxPoint y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="e8" edge="1" parent="1" source="tb_pre_requisito" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.627;entryY=1.19;entryDx=0;entryDy=0;entryPerimeter=0;" target="tb_disciplina.ds_ementa">
+        <mxCell id="e8" edge="1" parent="1" source="tb_pre_requisito" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.3676;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="tb_disciplina">
           <mxGeometry relative="1" x="-0.1899" as="geometry" />
         </mxCell>
         <mxCell id="e8s" connectable="0" parent="e8" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(0,N)" vertex="1">
@@ -736,7 +741,7 @@
             <mxPoint y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="e9" edge="1" parent="1" source="tb_turma.id_disciplina" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;" target="tb_disciplina">
+        <mxCell id="e9" edge="1" parent="1" source="tb_turma.id_disciplina" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;" target="tb_disciplina.id_disciplina">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e9s" connectable="0" parent="e9" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(0,N)" vertex="1">
@@ -775,11 +780,11 @@
             <mxPoint y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="e12" edge="1" parent="1" source="tb_turma_horario" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;entryX=0;entryY=0.5;" target="tb_turma.id_turma">
+        <mxCell id="e12" edge="1" parent="1" source="tb_turma_horario.id_turma" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;entryX=0;entryY=0.5;" target="tb_turma.id_turma">
           <mxGeometry relative="1" x="-0.1104" as="geometry">
             <Array as="points">
-              <mxPoint x="1285" y="816" />
-              <mxPoint x="1285" y="150" />
+              <mxPoint x="1265" y="816" />
+              <mxPoint x="1265" y="150" />
               <mxPoint x="1720" y="150" />
               <mxPoint x="1720" y="232" />
             </Array>
@@ -795,16 +800,14 @@
             <mxPoint y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="e19" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="tb_periodo_letivo.dt_inicio">
+        <mxCell id="e19" edge="1" parent="1" source="tb_turma_horario.id_periodo_letivo" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="tb_periodo_letivo.id_periodo_letivo">
           <mxGeometry relative="1" x="-0.1058" as="geometry">
             <Array as="points">
               <mxPoint x="1285" y="864" />
               <mxPoint x="1285" y="680" />
               <mxPoint x="1710" y="680" />
-              <mxPoint x="1710" y="572" />
+              <mxPoint x="1710" y="500" />
             </Array>
-            <mxPoint x="1220.0000000000005" y="864" as="sourcePoint" />
-            <mxPoint x="1740" y="596" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="e19s" connectable="0" parent="e19" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(0,N)" vertex="1">
@@ -817,7 +820,7 @@
             <mxPoint y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="e13" edge="1" parent="1" source="tb_turma_horario.id_sala" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;" target="tb_sala">
+        <mxCell id="e13" edge="1" parent="1" source="tb_turma_horario.id_sala" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;" target="tb_sala.id_sala">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e13s" connectable="0" parent="e13" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(0,N)" vertex="1">
@@ -840,7 +843,7 @@
         </mxCell>
         <mxCell id="e14t" connectable="0" parent="e14" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(1,1)" vertex="1">
           <mxGeometry relative="1" x="0.75" as="geometry">
-            <mxPoint y="-10" as="offset" />
+            <mxPoint x="0" y="10" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="e15" edge="1" parent="1" source="tb_aluno.id_curriculo" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;" target="tb_curriculo.id_curriculo">
@@ -853,7 +856,7 @@
         </mxCell>
         <mxCell id="e15t" connectable="0" parent="e15" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(1,1)" vertex="1">
           <mxGeometry relative="1" x="0.75" as="geometry">
-            <mxPoint y="-10" as="offset" />
+            <mxPoint x="0" y="10" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="e16" edge="1" parent="1" source="tb_matricula.id_aluno" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;" target="tb_aluno.id_aluno">
@@ -869,7 +872,7 @@
             <mxPoint y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="e17" edge="1" parent="1" source="tb_matricula" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;" target="tb_turma.id_turma">
+        <mxCell id="e17" edge="1" parent="1" source="tb_matricula.id_turma" style="edgeStyle=entityRelationEdgeStyle;html=1;rounded=1;strokeColor=#64748B;strokeWidth=1.5;startArrow=ERzeroToMany;startFill=0;endArrow=ERmandOne;endFill=0;startSize=10;endSize=10;fontSize=10;" target="tb_turma.id_turma">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e17s" connectable="0" parent="e17" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;fontColor=#1E293B;labelBackgroundColor=#FFFFFF;rounded=1;roundedPerimeter=1;" value="(0,N)" vertex="1">
@@ -901,8 +904,8 @@
         <mxCell id="legenda" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=#F8FAFC;strokeColor=#CBD5E1;spacing=8;fontSize=12;fontColor=#0F172A;rounded=1;arcSize=6;roundedPerimeter=1;" value="&lt;b&gt;Legenda&lt;/b&gt;&lt;br&gt;Cores dos cabeçalhos (área do sistema): &lt;span style=&quot;background-color:#475569;color:#FFFFFF;padding:1px 6px;border-radius:3px;&quot;&gt;&lt;b&gt;&amp;nbsp;Estrutura física&amp;nbsp;&lt;/b&gt;&lt;/span&gt; &amp;nbsp;&lt;span style=&quot;background-color:#1D4ED8;color:#FFFFFF;padding:1px 6px;border-radius:3px;&quot;&gt;&lt;b&gt;&amp;nbsp;Grade acadêmica&amp;nbsp;&lt;/b&gt;&lt;/span&gt; &amp;nbsp;&lt;span style=&quot;background-color:#B45309;color:#FFFFFF;padding:1px 6px;border-radius:3px;&quot;&gt;&lt;b&gt;&amp;nbsp;Oferta do semestre&amp;nbsp;&lt;/b&gt;&lt;/span&gt; &amp;nbsp;&lt;span style=&quot;background-color:#0F766E;color:#FFFFFF;padding:1px 6px;border-radius:3px;&quot;&gt;&lt;b&gt;&amp;nbsp;Aluno e matrícula&amp;nbsp;&lt;/b&gt;&lt;/span&gt;&lt;br&gt;&lt;b&gt;&lt;u&gt;coluna&lt;/u&gt;&lt;/b&gt; &lt;b&gt;PK&lt;/b&gt; chave primária &amp;nbsp;·&amp;nbsp; &lt;font color=&quot;#1D4ED8&quot;&gt;coluna &lt;b&gt;FK&lt;/b&gt;&lt;/font&gt; chave estrangeira &amp;nbsp;·&amp;nbsp; &lt;font color=&quot;#64748B&quot;&gt;U&lt;/font&gt; único &amp;nbsp;·&amp;nbsp; &lt;font color=&quot;#64748B&quot;&gt;gerada&lt;/font&gt; coluna calculada pelo banco&lt;br&gt;Cardinalidade &lt;b&gt;(mín,máx)&lt;/b&gt; em cada ponta da linha: (1,1) exatamente um · (0,1) zero ou um · (0,N) zero ou muitos&lt;br&gt;Pé de galinha: &lt;b&gt;|&lt;/b&gt; obrigatório · &lt;b&gt;o&lt;/b&gt; opcional · &lt;b&gt;&amp;lt;&lt;/b&gt; muitos · cada linha liga a FK à PK que ela referencia" vertex="1">
           <mxGeometry height="118" width="1120" x="960" y="20" as="geometry" />
         </mxCell>
-        <mxCell id="obs" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=#F8FAFC;strokeColor=#CBD5E1;fontColor=#0F172A;spacing=10;fontSize=12;rounded=1;arcSize=4;roundedPerimeter=1;" value="&lt;b&gt;Regras que não aparecem como linha&lt;/b&gt;&lt;br&gt;• &lt;b&gt;FK composta&lt;/b&gt; tb_aluno (id_curriculo, id_curso) → tb_curriculo: o currículo do aluno é do curso dele.&lt;br&gt;• &lt;b&gt;FK composta&lt;/b&gt; tb_turma_horario (id_turma, id_periodo_letivo) → tb_turma: o semestre do horário é o da turma.&lt;br&gt;• &lt;b&gt;EXCLUDE&lt;/b&gt; em tb_turma_horario: no mesmo semestre, dia e sala, dois horários não se sobrepõem.&lt;br&gt;• tb_log_matricula não tem FK de propósito (o log continua se a matrícula for apagada) · tb_feriado.id_campus nulo = feriado nacional." vertex="1">
-          <mxGeometry height="108" width="1660" x="40" y="1424" as="geometry" />
+        <mxCell id="obs" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;fillColor=#F8FAFC;strokeColor=#CBD5E1;fontColor=#0F172A;spacing=10;fontSize=12;rounded=1;arcSize=4;roundedPerimeter=1;" value="&lt;b&gt;Regras que não aparecem como linha&lt;/b&gt;&lt;br&gt;• &lt;b&gt;FK composta&lt;/b&gt; tb_aluno (id_curriculo, id_curso) → tb_curriculo: o currículo do aluno é do curso dele.&lt;br&gt;• &lt;b&gt;FK composta&lt;/b&gt; tb_turma_horario (id_turma, id_periodo_letivo) → tb_turma: o semestre do horário é o da turma.&lt;br&gt;• &lt;b&gt;EXCLUDE&lt;/b&gt; em tb_turma_horario: no mesmo semestre, dia e sala, dois horários não se sobrepõem.&lt;br&gt;• tb_log_matricula não tem FK de propósito (o log continua se a matrícula for apagada) · tb_feriado.id_campus nulo = feriado nacional.&lt;br&gt;• &lt;b&gt;Único composto&lt;/b&gt; (a combinação não se repete): tb_matricula (id_aluno, id_turma), o aluno não se matricula duas vezes na mesma turma · tb_turma (cd_turma, id_disciplina, id_periodo_letivo) · tb_sala (id_campus, cd_sala) · tb_curriculo (id_curso, aa_vigencia) · tb_curriculo_disciplina (id_curriculo, id_disciplina) · tb_pre_requisito (id_disciplina, id_disciplina_requisito) · tb_periodo_letivo (aa_periodo, cd_semestre) · tb_cidade (nm_cidade, sg_uf) · tb_feriado (dt_feriado, id_campus)." vertex="1">
+          <mxGeometry height="150" width="1660" x="40" y="1424" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
