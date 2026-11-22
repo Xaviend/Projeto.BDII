@@ -1,6 +1,6 @@
 /*
 Autor: Iury Xavier Bomfim  - Modelagem Física e Desempenho
-Objetivo: provar que as restrições do modelo_fisico_v1.sql funcionam. Para cada regra:
+Objetivo: provar que as restrições do 01_modelo_fisico_v1.sql funcionam. Para cada regra:
           1 INSERT que PASSA (dado válido) e 1 que é BARRADO (dado inválido).
 
 Como funciona:
@@ -12,7 +12,7 @@ Como funciona:
 
 Resultado esperado: 14 linhas "OK barrado (...)" e nenhuma "FALHOU".
 
-testes_restricoes_v1
+02_testes_restricoes_v1
 */
 ------------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)

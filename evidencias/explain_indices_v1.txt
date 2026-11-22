@@ -1,0 +1,104 @@
+EVIDENCIAS - INDICES (modelagem fisica e desempenho)
+Aba Messages do sql/04_indices_v1.sql: EXPLAIN (ANALYZE, BUFFERS) de cada consulta ANTES e DEPOIS do indice.
+Gerado em 22/11/2026 01:23 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
+com os scripts 01 a 04 na ordem do README. Tempo (ms) muda de maquina para maquina; buffers quase nao mudam.
+buffers = paginas de 8 kB lidas (hit = da memoria, read = do disco).
+O resumo (aba Data Output) esta em evidencias/resumo_indices_v1.csv.
+index "ix_matricula_turma_ativa" does not exist, skipping
+index "ix_historico_situacao_media" does not exist, skipping
+index "ix_matricula_dt" does not exist, skipping
+index "ix_aluno_nm_pattern" does not exist, skipping
+schema "pg_temp" does not exist, skipping
+
+=== 1 vagas ocupadas da turma - ANTES ===
+Aggregate  (cost=533.75..533.76 rows=1 width=8) (actual time=0.143..0.144 rows=1 loops=1)
+  Buffers: shared hit=102
+  ->  Index Scan using uq_matricula_aluno_turma on tb_matricula  (cost=0.29..533.74 rows=7 width=0) (actual time=0.006..0.141 rows=34 loops=1)
+        Index Cond: (id_turma = (current_setting('projeto_bd2.turma_alvo'::text))::integer)
+        Filter: (ds_status = 'ativa'::tp_status_matricula)
+        Rows Removed by Filter: 3
+        Buffers: shared hit=102
+Planning Time: 0.034 ms
+Execution Time: 0.152 ms
+
+=== 1 vagas ocupadas da turma - DEPOIS ===
+Aggregate  (cost=28.42..28.43 rows=1 width=8) (actual time=0.015..0.015 rows=1 loops=1)
+  Buffers: shared hit=31
+  ->  Bitmap Heap Scan on tb_matricula  (cost=4.34..28.41 rows=7 width=0) (actual time=0.007..0.013 rows=34 loops=1)
+        Recheck Cond: ((id_turma = (current_setting('projeto_bd2.turma_alvo'::text))::integer) AND (ds_status = 'ativa'::tp_status_matricula))
+        Heap Blocks: exact=29
+        Buffers: shared hit=31
+        ->  Bitmap Index Scan on ix_matricula_turma_ativa  (cost=0.00..4.34 rows=7 width=0) (actual time=0.004..0.004 rows=34 loops=1)
+              Index Cond: (id_turma = (current_setting('projeto_bd2.turma_alvo'::text))::integer)
+              Buffers: shared hit=2
+Planning Time: 0.035 ms
+Execution Time: 0.024 ms
+
+=== 1 tamanho: parcial x completo ===
+parcial  (so ativas): 56 kB
+completo (todas)    : 208 kB
+
+=== 2 top 10 medias dos aprovados - ANTES ===
+Limit  (cost=918.56..918.58 rows=10 width=10) (actual time=2.309..2.310 rows=10 loops=1)
+  Buffers: shared hit=197
+  ->  Sort  (cost=918.56..966.49 rows=19174 width=10) (actual time=2.308..2.309 rows=10 loops=1)
+        Sort Key: qt_media_final DESC
+        Sort Method: top-N heapsort  Memory: 25kB
+        Buffers: shared hit=197
+        ->  Seq Scan on tb_historico  (cost=0.00..504.21 rows=19174 width=10) (actual time=0.004..1.227 rows=19174 loops=1)
+              Filter: (ds_situacao = 'aprovado'::tp_situacao)
+              Rows Removed by Filter: 5403
+              Buffers: shared hit=197
+Planning Time: 0.025 ms
+Execution Time: 2.315 ms
+
+=== 2 top 10 medias dos aprovados - DEPOIS ===
+Limit  (cost=0.29..0.95 rows=10 width=10) (actual time=0.004..0.007 rows=10 loops=1)
+  Buffers: shared hit=12
+  ->  Index Scan using ix_historico_situacao_media on tb_historico  (cost=0.29..1279.28 rows=19174 width=10) (actual time=0.004..0.006 rows=10 loops=1)
+        Index Cond: (ds_situacao = 'aprovado'::tp_situacao)
+        Buffers: shared hit=12
+Planning Time: 0.025 ms
+Execution Time: 0.012 ms
+
+=== 3 ultimas 20 matriculas - ANTES ===
+Limit  (cost=1097.92..1097.97 rows=20 width=16) (actual time=2.346..2.348 rows=20 loops=1)
+  Buffers: shared hit=184
+  ->  Sort  (cost=1097.92..1160.33 rows=24964 width=16) (actual time=2.346..2.346 rows=20 loops=1)
+        Sort Key: dt_matricula DESC
+        Sort Method: top-N heapsort  Memory: 26kB
+        Buffers: shared hit=184
+        ->  Seq Scan on tb_matricula  (cost=0.00..433.64 rows=24964 width=16) (actual time=0.003..1.085 rows=24964 loops=1)
+              Buffers: shared hit=184
+Planning Time: 0.018 ms
+Execution Time: 2.353 ms
+
+=== 3 ultimas 20 matriculas - DEPOIS ===
+Limit  (cost=0.29..1.40 rows=20 width=16) (actual time=0.003..0.007 rows=20 loops=1)
+  Buffers: shared hit=22
+  ->  Index Scan Backward using ix_matricula_dt on tb_matricula  (cost=0.29..1386.74 rows=24964 width=16) (actual time=0.003..0.006 rows=20 loops=1)
+        Buffers: shared hit=22
+Planning Time: 0.019 ms
+Execution Time: 0.012 ms
+
+=== 4 aluno pelo prefixo do nome - ANTES ===
+Seq Scan on tb_aluno  (cost=0.00..56.00 rows=1 width=26) (actual time=0.039..0.074 rows=1 loops=1)
+  Filter: ((nm_aluno)::text ~~ 'Ana Silva%'::text)
+  Rows Removed by Filter: 1999
+  Buffers: shared hit=31
+Planning Time: 0.046 ms
+Execution Time: 0.080 ms
+
+=== 4 aluno pelo prefixo do nome - DEPOIS ===
+Index Scan using ix_aluno_nm_pattern on tb_aluno  (cost=0.28..8.30 rows=1 width=26) (actual time=0.005..0.006 rows=1 loops=1)
+  Index Cond: (((nm_aluno)::text ~>=~ 'Ana Silva'::text) AND ((nm_aluno)::text ~<~ 'Ana Silvb'::text))
+  Filter: ((nm_aluno)::text ~~ 'Ana Silva%'::text)
+  Buffers: shared hit=3
+Planning Time: 0.049 ms
+Execution Time: 0.012 ms
+
+=== tamanho dos indices criados ===
+ix_aluno_nm_pattern            : 104 kB
+ix_historico_situacao_media    : 776 kB
+ix_matricula_dt                : 552 kB
+ix_matricula_turma_ativa       : 56 kB

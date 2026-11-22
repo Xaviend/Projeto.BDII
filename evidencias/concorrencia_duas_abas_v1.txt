@@ -1,0 +1,246 @@
+EVIDENCIAS - TRANSACOES E CONCORRENCIA (a ultima vaga da turma CCO072 2026/2 A: 35 vagas, 34 ocupadas)
+Gerado em 22/11/2026 01:23 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
+com os scripts 01 a 04 na ordem do README.
+Como foi gerado: duas sessoes psql abertas ao mesmo tempo no banco matricula, no papel das duas abas do Query Tool.
+Cada passo dos scripts 05b, 05c e 05d foi mandado so para a aba que o script indica, com 1,5 s entre um e outro.
+[ABA 1] e [ABA 2] = o que cada aba mostrou logo depois daquele passo.
+(esperando trava: ...) = sessoes paradas esperando uma trava naquele momento, lido de pg_stat_activity.
+A limpeza (05e) e a conferencia FINAL rodam numa terceira conexao. Erro aparece com o codigo (SQLSTATE) na frente.
+
+==================== preparacao ====================
+   limpeza (05e, numa terceira conexao): ok -> turma A com 35 vagas, 34 ocupadas, vagas_livres = 1
+
+-- 05a_concorrencia_preparacao_v1.sql inteiro (F5), nas DUAS abas
+[ABA 1] SET
+[ABA 1] DO
+[ABA 1] NOTICE:  00000: ok, turma_alvo = 1529
+[ABA 1]  id_turma | qt_vagas | ocupadas | vagas_livres 
+[ABA 1] ----------+----------+----------+--------------
+[ABA 1]      1529 |       35 |       34 |            1
+[ABA 1] (1 row)
+[ABA 2] SET
+[ABA 2] NOTICE:  00000: ok, turma_alvo = 1529
+[ABA 2] DO
+[ABA 2]  id_turma | qt_vagas | ocupadas | vagas_livres 
+[ABA 2] ----------+----------+----------+--------------
+[ABA 2]      1529 |       35 |       34 |            1
+[ABA 2] (1 row)
+   (esperando trava: nenhuma)
+
+==================== 05b_concorrencia_erro_v1.sql ====================
+
+-- (inicio do arquivo, nas duas abas)
+[ABA 1] SET
+[ABA 2] SET
+   (esperando trava: nenhuma)
+
+-- PASSO 1 - ABA 1: abre a transação e confere a vaga (vê vagas_livres = 1)
+[ABA 1] BEGIN
+[ABA 1]  vagas_livres 
+[ABA 1] --------------
+[ABA 1]             1
+[ABA 1] (1 row)
+   (esperando trava: nenhuma)
+
+-- PASSO 2 - ABA 2: abre a transação e confere a vaga (TAMBÉM vê vagas_livres = 1)
+[ABA 2] BEGIN
+[ABA 2]  vagas_livres 
+[ABA 2] --------------
+[ABA 2]             1
+[ABA 2] (1 row)
+   (esperando trava: nenhuma)
+
+-- PASSO 3 - ABA 1: matricula o aluno A e confirma (tem que aparecer INSERT 0 1)
+[ABA 1] INSERT 0 1
+[ABA 1] COMMIT
+   (esperando trava: nenhuma)
+
+-- PASSO 4 - ABA 2: ainda "acha" que tem vaga (leu no passo 2), matricula o aluno B e confirma
+[ABA 2] INSERT 0 1
+[ABA 2] COMMIT
+   (esperando trava: nenhuma)
+
+-- PASSO 5 - qualquer aba: PROVA DO ERRO (esperado: ocupadas = 36, vagas_livres = -1)
+[ABA 1]  qt_vagas | ocupadas | vagas_livres 
+[ABA 1] ----------+----------+--------------
+[ABA 1]        35 |       36 |           -1
+[ABA 1] (1 row)
+   (esperando trava: nenhuma)
+
+-- PASSO 6 - antes de testar as soluções: rodar 05e_concorrencia_limpeza_v1.sql
+   (esperando trava: nenhuma)
+
+   FINAL (terceira conexao): turma A com 35 vagas, 36 ocupadas, vagas_livres = -1
+
+==================== 05c_concorrencia_solucao1_for_update_v1.sql ====================
+   limpeza (05e, numa terceira conexao): ok -> turma A com 35 vagas, 34 ocupadas, vagas_livres = 1
+
+-- (inicio do arquivo, nas duas abas)
+[ABA 1] SET
+[ABA 2] SET
+   (esperando trava: nenhuma)
+
+-- PASSO 1 - ABA 1: abre a transação e TRANCA a turma
+[ABA 1] BEGIN
+[ABA 1]  id_turma | qt_vagas 
+[ABA 1] ----------+----------
+[ABA 1]      1529 |       35
+[ABA 1] (1 row)
+   (esperando trava: nenhuma)
+
+-- PASSO 2 - ABA 1: matricula o aluno A se tiver vaga (INSERT 0 1). NÃO dê COMMIT ainda.
+[ABA 1] INSERT 0 1
+   (esperando trava: nenhuma)
+
+-- PASSO 3 - ABA 2: tenta trancar a mesma turma. A aba FICA TRAVADA esperando.
+[ABA 2] BEGIN
+   (esperando trava: ABA 2)
+
+-- PASSO 4 - ABA 1: confirma e libera a turma
+[ABA 1] COMMIT
+[ABA 2]  id_turma | qt_vagas 
+[ABA 2] ----------+----------
+[ABA 2]      1529 |       35
+[ABA 2] (1 row)
+   (esperando trava: nenhuma)
+
+-- PASSO 5 - ABA 2: o passo 3 destravou sozinho. Mesmo INSERT do passo 2 com o aluno B: turma cheia, INSERT 0 0.
+[ABA 2] INSERT 0 0
+[ABA 2] COMMIT
+   (esperando trava: nenhuma)
+
+-- PASSO 6 - qualquer aba: PROVA (esperado: ocupadas = 35, vagas_livres = 0)
+[ABA 1]  qt_vagas | ocupadas | vagas_livres 
+[ABA 1] ----------+----------+--------------
+[ABA 1]        35 |       35 |            0
+[ABA 1] (1 row)
+   (esperando trava: nenhuma)
+
+   FINAL (terceira conexao): turma A com 35 vagas, 35 ocupadas, vagas_livres = 0
+
+==================== 05d_concorrencia_solucao2_serializable_v1.sql ====================
+   limpeza (05e, numa terceira conexao): ok -> turma A com 35 vagas, 34 ocupadas, vagas_livres = 1
+
+-- (inicio do arquivo, nas duas abas)
+[ABA 1] SET
+[ABA 2] SET
+   (esperando trava: nenhuma)
+
+-- PASSO 1 - ABA 1 e depois ABA 2: abre transação SERIALIZABLE e confere a vaga (as duas veem 1 livre)
+[ABA 1] BEGIN
+[ABA 1]  vagas_livres 
+[ABA 1] --------------
+[ABA 1]             1
+[ABA 1] (1 row)
+[ABA 2] BEGIN
+[ABA 2]  vagas_livres 
+[ABA 2] --------------
+[ABA 2]             1
+[ABA 2] (1 row)
+   (esperando trava: nenhuma)
+
+-- PASSO 2 - ABA 1: matricula o aluno A se tiver vaga e confirma (INSERT 0 1, funciona)
+[ABA 1] INSERT 0 1
+[ABA 1] COMMIT
+   (esperando trava: nenhuma)
+
+-- PASSO 3 - ABA 2: mesmo INSERT com o aluno B. ERRO ESPERADO aqui:
+[ABA 2] ERROR:  40001: could not serialize access due to read/write dependencies among transactions
+[ABA 2] DETAIL:  Reason code: Canceled on identification as a pivot, during write.
+[ABA 2] HINT:  The transaction might succeed if retried.
+[ABA 2] ROLLBACK
+   (esperando trava: nenhuma)
+
+-- PASSO 4 - ABA 2: encerra a transação que falhou
+[ABA 2] WARNING:  25P01: there is no transaction in progress
+[ABA 2] ROLLBACK
+   (esperando trava: nenhuma)
+
+-- PASSO 5 - ABA 2: RETRY. Refaz tudo do zero com o mesmo INSERT: agora a turma está cheia (INSERT 0 0)
+[ABA 2] BEGIN
+[ABA 2] INSERT 0 0
+[ABA 2] COMMIT
+   (esperando trava: nenhuma)
+
+-- PASSO 6 - qualquer aba: PROVA (esperado: ocupadas = 35, vagas_livres = 0)
+[ABA 1]  qt_vagas | ocupadas | vagas_livres 
+[ABA 1] ----------+----------+--------------
+[ABA 1]        35 |       35 |            0
+[ABA 1] (1 row)
+   (esperando trava: nenhuma)
+
+   FINAL (terceira conexao): turma A com 35 vagas, 35 ocupadas, vagas_livres = 0
+   limpeza (05e, numa terceira conexao): ok -> turma A com 35 vagas, 34 ocupadas, vagas_livres = 1
+
+==================== medicoes extras para a comparacao (nao fazem parte da demonstracao) ====================
+
+-- X1 - travas de predicado (SIReadLock) que a contagem de vagas pega no SERIALIZABLE
+[ABA 1] BEGIN
+[ABA 1]  vagas_livres 
+[ABA 1] --------------
+[ABA 1]             1
+[ABA 1] (1 row)
+   (esperando trava: nenhuma)
+   travas SIReadLock da ABA 1 (terceira conexao, pg_locks):
+      page em projeto_bd2.ix_matricula_turma_ativa: 1
+      page em projeto_bd2.uq_turma_id_periodo: 1
+      relation em projeto_bd2.tb_matricula: 1
+      tuple em projeto_bd2.tb_turma: 1
+[ABA 1] ROLLBACK
+   (esperando trava: nenhuma)
+
+-- X2 - SERIALIZABLE com turmas DIFERENTES: ABA 1 na turma A, ABA 2 na turma B (CCO072 2026/2 B)
+[ABA 2]  turma_da_aba_2 
+[ABA 2] ----------------
+[ABA 2]  1530
+[ABA 2] (1 row)
+   (esperando trava: nenhuma)
+   antes: turma B com 45 vagas, 34 ocupadas, vagas_livres = 11
+[ABA 1] BEGIN
+[ABA 1]  vagas_livres 
+[ABA 1] --------------
+[ABA 1]             1
+[ABA 1] (1 row)
+[ABA 2] BEGIN
+[ABA 2]  vagas_livres 
+[ABA 2] --------------
+[ABA 2]            11
+[ABA 2] (1 row)
+   (esperando trava: nenhuma)
+[ABA 1] INSERT 0 1
+[ABA 1] COMMIT
+   (esperando trava: nenhuma)
+[ABA 2] ERROR:  40001: could not serialize access due to read/write dependencies among transactions
+[ABA 2] DETAIL:  Reason code: Canceled on identification as a pivot, during write.
+[ABA 2] HINT:  The transaction might succeed if retried.
+[ABA 2] ROLLBACK
+   (esperando trava: nenhuma)
+[ABA 2] WARNING:  25P01: there is no transaction in progress
+[ABA 2] ROLLBACK
+   (esperando trava: nenhuma)
+   depois: turma A com 35 vagas, 35 ocupadas, vagas_livres = 0 | turma B com 45 vagas, 34 ocupadas, vagas_livres = 11
+   limpeza das turmas A e B: DELETE 1 -> turma A com 35 vagas, 34 ocupadas, vagas_livres = 1 | turma B com 45 vagas, 34 ocupadas, vagas_livres = 11
+
+-- X3 - FOR UPDATE com turmas DIFERENTES: ABA 1 tranca a turma A, ABA 2 tranca a turma B
+[ABA 1] BEGIN
+[ABA 1]  id_turma | qt_vagas 
+[ABA 1] ----------+----------
+[ABA 1]      1529 |       35
+[ABA 1] (1 row)
+   (esperando trava: nenhuma)
+[ABA 2] BEGIN
+[ABA 2]  id_turma | qt_vagas 
+[ABA 2] ----------+----------
+[ABA 2]      1530 |       45
+[ABA 2] (1 row)
+   (esperando trava: nenhuma)
+[ABA 1] ROLLBACK
+[ABA 2] ROLLBACK
+   (esperando trava: nenhuma)
+
+RESUMO
+05b_concorrencia_erro_v1.sql                     35 vagas, 36 ocupadas, vagas_livres = -1
+05c_concorrencia_solucao1_for_update_v1.sql      35 vagas, 35 ocupadas, vagas_livres = 0 (ABA 2 esperou a trava)
+05d_concorrencia_solucao2_serializable_v1.sql    35 vagas, 35 ocupadas, vagas_livres = 0 (ABA 2 recebeu o erro 40001 e repetiu)
+X2 SERIALIZABLE turmas diferentes: ABA 2 recebeu 40001 (falso positivo)
+X3 FOR UPDATE turmas diferentes: ninguem esperou

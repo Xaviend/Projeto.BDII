@@ -4,9 +4,9 @@ Objetivo: criar as 3 views do Marco 2 (oferta, vagas e histórico) e 1 materiali
           política de atualização justificada e o ganho da materialized view medido com EXPLAIN (ANALYZE, BUFFERS).
 
 Como rodar:
-  - rodar DEPOIS do modelo_fisico_v1.sql, do carga_v1.sql e do indices_v1.sql;
+  - rodar DEPOIS do 01_modelo_fisico_v1.sql, do 03_carga_v1.sql e do 04_indices_v1.sql;
   - pode rodar quantas vezes quiser (CREATE OR REPLACE nas views, DROP ... IF EXISTS na materialized view);
-  - o administracao_seguranca_v1.sql roda DEPOIS deste: é ele que dá acesso às views para cada papel.
+  - o 09_administracao_seguranca_v1.sql roda DEPOIS deste: é ele que dá acesso às views para cada papel.
   Roda inteiro com F5. Os planos aparecem na aba Messages e o resumo antes x depois na aba Data Output.
 
 VIEW x MATERIALIZED VIEW
@@ -20,7 +20,7 @@ security_invoker (PostgreSQL 15 em diante)
   - Com security_invoker = true a view usa as permissões de QUEM CONSULTA, e o RLS do aluno vale dentro dela.
   - vw_oferta e vw_historico usam security_invoker = true. A vw_vagas NÃO usa, de propósito (ver bloco 2).
 
-administracao_views_v1
+07_administracao_views_v1
 */
 ------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)
@@ -112,7 +112,7 @@ SELECT ds_periodo, cd_disciplina, cd_turma, qt_vagas, qt_ocupadas, qt_livres, pc
 
 ------------------------------------------------------------------------------------------------------------------------
 -- BLOCO 3 - vw_historico: o histórico escolar (notas, frequência, média e situação de cada disciplina cursada)
--- security_invoker = true: com o RLS do administracao_seguranca_v1.sql, o aluno que consulta esta view só recebe
+-- security_invoker = true: com o RLS do 09_administracao_seguranca_v1.sql, o aluno que consulta esta view só recebe
 -- as PRÓPRIAS linhas; a secretaria e a coordenação recebem todas. A regra fica nas tabelas, não na view:
 -- quem tentar ler tb_historico direto esbarra no mesmo RLS.
 -- Só entram matrículas que têm histórico (trancada e cancelada não têm: é o (0,1) do modelo).
@@ -219,7 +219,7 @@ BEGIN
 END $$;
 
 -- Toda função nasce com EXECUTE liberado para PUBLIC (todo mundo). Esta não pode: fecha aqui, e o
--- administracao_seguranca_v1.sql libera só para a coordenação.
+-- 09_administracao_seguranca_v1.sql libera só para a coordenação.
 REVOKE ALL ON FUNCTION fn_atualizar_indicadores() FROM PUBLIC;
 
 -- Teste: o painel de Ciência da Computação, semestre a semestre
@@ -271,9 +271,9 @@ ROLLBACK;   -- desfaz a nota e o REFRESH: o banco volta como estava
 
 ------------------------------------------------------------------------------------------------------------------------
 -- BLOCO 6 - GANHO MEDIDO: a consulta dos indicadores calculada na hora x lida da materialized view
--- Mesmo método do indices_v1.sql: EXPLAIN (ANALYZE, BUFFERS) duas vezes, só a 2ª conta (a 1ª esquenta o cache).
+-- Mesmo método do 04_indices_v1.sql: EXPLAIN (ANALYZE, BUFFERS) duas vezes, só a 2ª conta (a 1ª esquenta o cache).
 -- Mede também a vw_vagas de UMA turma, para mostrar que a view usa o índice parcial ix_matricula_turma_ativa
--- do indices_v1.sql (a view não tem plano próprio: o planejador abre a consulta dela).
+-- do 04_indices_v1.sql (a view não tem plano próprio: o planejador abre a consulta dela).
 
 DROP TABLE IF EXISTS pg_temp._ganho_adm;
 CREATE TEMP TABLE _ganho_adm (consulta TEXT, fase TEXT, ms NUMERIC, buffers INT);
@@ -325,7 +325,7 @@ $q$SELECT aa_periodo, cd_semestre, qt_alunos, qt_aprovados, qt_media_geral, pc_f
      FROM mv_indicadores
     WHERE cd_curso = 'CCO'$q$);
 
--- 3) vagas de UMA turma pela view: o plano mostra o índice parcial do indices_v1.sql sendo usado
+-- 3) vagas de UMA turma pela view: o plano mostra o índice parcial do 04_indices_v1.sql sendo usado
 SELECT pg_temp.fn_medir('2 vagas de uma turma pela vw_vagas', 'view',
 $q$SELECT qt_vagas, qt_ocupadas, qt_livres
      FROM vw_vagas

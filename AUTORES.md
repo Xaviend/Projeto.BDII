@@ -11,26 +11,34 @@ Banco de Dados II (CCO072), prof. Rodrigo Gonçalves. Cada um cuidou de uma fren
 ## Iury Xavier Bomfim: modelagem física e desempenho
 
 - `modelo/modelo_logico.v3.drawio`: modelo lógico com as 17 tabelas, tipos, chaves e cardinalidades
-- `sql/modelo_fisico_v1.sql`: schema `projeto_bd2`, tabelas, domínios, enums, restrições (CHECK, UNIQUE, FK composta, EXCLUDE de horário, colunas geradas)
-- `sql/testes_restricoes_v1.sql`: 14 testes que provam que as restrições barram dado errado
-- `sql/carga_v1.sql`: carga sintética e determinística (2000 alunos, 1536 turmas, ~25 mil matrículas)
-- `sql/indices_v1.sql`: 4 índices (um parcial) com EXPLAIN antes e depois
+- `sql/01_modelo_fisico_v1.sql`: schema `projeto_bd2`, tabelas, domínios, enums, restrições (CHECK, UNIQUE, FK composta, EXCLUDE de horário, colunas geradas)
+- `sql/02_testes_restricoes_v1.sql`: 14 testes que provam que as restrições barram dado errado
+- `sql/03_carga_v1.sql`: carga sintética e determinística (2000 alunos, 1536 turmas, ~25 mil matrículas)
+- `sql/04_indices_v1.sql`: 4 índices (um parcial) com EXPLAIN antes e depois
 - `evidencias/explain_indices_v1.txt` e `evidencias/resumo_indices_v1.csv`
 
 ## Eduardo Serra: transações e concorrência
 
-- `sql/concorrencia_preparacao_v1.sql`, `sql/concorrencia_limpeza_v1.sql`
-- `sql/concorrencia_erro_v1.sql`: a anomalia da última vaga no READ COMMITTED
-- `sql/concorrencia_solucao1_for_update_v1.sql`: solução com trava pessimista (`SELECT ... FOR UPDATE`)
-- `sql/concorrencia_solucao2_serializable_v1.sql`: solução com isolamento `SERIALIZABLE` e repetição (erro 40001)
-- prints da demonstração em `evidencias/`
+- `sql/05a_concorrencia_preparacao_v1.sql`, `sql/05e_concorrencia_limpeza_v1.sql`
+- `sql/05b_concorrencia_erro_v1.sql`: a anomalia da última vaga no READ COMMITTED
+- `sql/05c_concorrencia_solucao1_for_update_v1.sql`: solução com trava pessimista (`SELECT ... FOR UPDATE`)
+- `sql/05d_concorrencia_solucao2_serializable_v1.sql`: solução com isolamento `SERIALIZABLE` e repetição (erro 40001)
+- `evidencias/concorrencia_duas_abas_v1.txt`: as duas abas passo a passo no erro e nas duas soluções
 
 ## Arthur Coupê: administração e operação
 
-- `sql/consultas_v1.sql`: as 10 consultas comentadas do Marco 1
-- `sql/administracao_views_v1.sql`: views de oferta, vagas e histórico e a materialized view de indicadores, com a política de refresh e o ganho medido
-- `sql/administracao_auditoria_v1.sql`: gatilho de auditoria das matrículas e das notas em JSONB, trava contra INSERT direto no log e índice GIN (bônus)
-- `sql/administracao_seguranca_v1.sql`: papéis, GRANT/REVOKE (inclusive por coluna) e RLS
-- `sql/administracao_seguranca_testes_v1.sql`: 29 testes de segurança, positivos, negativos e a lista exata do permitido
-- `sql/administracao_backup_conferencia_v1.sql` e `docs/backup_restauracao.md`: backup, restauração e a impressão digital que prova a restauração
+- `sql/06_consultas_v1.sql`: as 10 consultas comentadas do Marco 1
+- `sql/07_administracao_views_v1.sql`: views de oferta, vagas e histórico e a materialized view de indicadores, com a política de refresh e o ganho medido
+- `sql/08_administracao_auditoria_v1.sql`: gatilho de auditoria das matrículas e das notas em JSONB, trava contra INSERT direto no log e índice GIN (bônus)
+- `sql/09_administracao_seguranca_v1.sql`: papéis, GRANT/REVOKE (inclusive por coluna) e RLS
+- `sql/10_administracao_seguranca_testes_v1.sql`: 29 testes de segurança, positivos, negativos e a lista exata do permitido
+- `sql/11_administracao_backup_conferencia_v1.sql` e `docs/backup_restauracao.md`: backup, restauração e a impressão digital que prova a restauração
 - `evidencias/explain_administracao_v1.txt`, `evidencias/testes_seguranca_v1.txt`, `evidencias/backup_restauracao_v1.txt`
+
+## Revisão final da entrega (22/11, Arthur)
+
+Arthur conferiu a entrega inteira montando o banco do zero pelo README e fez os ajustes que faltavam:
+
+- trouxe para a main o histórico das branches do Iury e do Eduardo, a versão mais nova do diagrama e o `05a_concorrencia_preparacao_v1.sql`, que só existia na branch do Eduardo;
+- numerou os scripts na ordem de execução e corrigiu os nomes e os números (36 para 35 vagas) nos comentários, no README e aqui;
+- gerou as evidências de índices e de concorrência na rodada do zero e escreveu a comparação entre FOR UPDATE e SERIALIZABLE no README, com as medições X1 a X3.

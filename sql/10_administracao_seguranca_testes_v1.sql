@@ -1,14 +1,14 @@
 /*
 Autor: Arthur Coupê - Administração e Operação
-Objetivo: provar que os papéis, os GRANT/REVOKE, o RLS e a trava do log (administracao_seguranca_v1.sql e
-          administracao_auditoria_v1.sql) funcionam. Cada teste troca de papel com SET ROLE e confere o resultado:
+Objetivo: provar que os papéis, os GRANT/REVOKE, o RLS e a trava do log (09_administracao_seguranca_v1.sql e
+          08_administracao_auditoria_v1.sql) funcionam. Cada teste troca de papel com SET ROLE e confere o resultado:
             - o que DEVE funcionar funciona (teste positivo) e
             - o que DEVE ser barrado é barrado (teste negativo), sempre com o positivo ao lado.
           Os testes 27 a 29 conferem a lista exata do permitido (permissões, papéis e policies): qualquer coisa a
           mais ou a menos aparece na mensagem.
 
 Como rodar:
-  - rodar DEPOIS do administracao_seguranca_v1.sql;
+  - rodar DEPOIS do 09_administracao_seguranca_v1.sql;
   - tudo fica entre BEGIN e ROLLBACK: nenhum dado é alterado de verdade;
   - Roda inteiro com F5. Resultado na aba Messages: cada teste imprime "OK ..." ou "FALHOU ...".
     Esperado: 29 OK e nenhum FALHOU.
@@ -17,7 +17,7 @@ Por que SET ROLE: o bd2 é superusuário e superusuário ignora RLS e GRANT. Con
 SET ROLE troca o papel; RESET ROLE volta para o bd2. Dentro dos blocos DO dos testes, SET LOCAL ROLE troca o papel
 só até o fim da transação.
 
-administracao_seguranca_testes_v1
+10_administracao_seguranca_testes_v1
 */
 ------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)
@@ -408,7 +408,7 @@ END $$;
 -- Os testes acima tentam ações escolhidas. Os três de baixo conferem TUDO contra uma lista escrita aqui, e qualquer
 -- diferença aparece na mensagem ("sobrando" = o banco permite e a lista não; "faltando" = o contrário).
 
--- Teste 27: a matriz de acesso do cabeçalho do administracao_seguranca_v1.sql, lida do banco (has_*_privilege).
+-- Teste 27: a matriz de acesso do cabeçalho do 09_administracao_seguranca_v1.sql, lida do banco (has_*_privilege).
 -- Cobre tabelas, views e materialized view (coluna por coluna quando a permissão é só de algumas colunas),
 -- sequences, funções e o schema. Os dois alunos de teste têm que ter exatamente o que o grupo aluno tem, e o
 -- visitante_teste (só PUBLIC) não pode ter nada.
