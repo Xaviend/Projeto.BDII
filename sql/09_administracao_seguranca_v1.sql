@@ -41,7 +41,7 @@ Matriz de acesso (o que cada papel pode fazer):
   DELETE em qualquer tabela        | -                        | -                       | -
   (matrícula não se apaga: muda o status para trancada ou cancelada, e o log guarda o antes e o depois)
 
-administracao_seguranca_v1
+09_administracao_seguranca_v1
 */
 ------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)

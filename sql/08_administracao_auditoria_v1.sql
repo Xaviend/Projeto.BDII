@@ -17,7 +17,7 @@ Por que JSONB:
   funcionando sem ALTER TABLE: a coluna nova simplesmente aparece dentro do JSON.
   JSONB (e não JSON): é guardado já "desmontado" em formato binário, aceita índice e os operadores @>, ->, ->>.
 
-administracao_auditoria_v1
+08_administracao_auditoria_v1
 */
 ------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)

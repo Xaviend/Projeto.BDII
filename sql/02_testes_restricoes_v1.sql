@@ -12,7 +12,7 @@ Como funciona:
 
 Resultado esperado: 14 linhas "OK barrado (...)" e nenhuma "FALHOU".
 
-testes_restricoes_v1
+02_testes_restricoes_v1
 */
 ------------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)

@@ -22,7 +22,7 @@ Como rodar:
 "Semestre atual" nas consultas = o período letivo mais recente cadastrado (2026/2), e não a data de hoje:
 assim o resultado é o mesmo em qualquer dia em que o professor rodar.
 
-consultas_v1
+06_consultas_v1
 */
 ------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)

@@ -20,7 +20,7 @@ security_invoker (PostgreSQL 15 em diante)
   - Com security_invoker = true a view usa as permissões de QUEM CONSULTA, e o RLS do aluno vale dentro dela.
   - vw_oferta e vw_historico usam security_invoker = true. A vw_vagas NÃO usa, de propósito (ver bloco 2).
 
-administracao_views_v1
+07_administracao_views_v1
 */
 ------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)

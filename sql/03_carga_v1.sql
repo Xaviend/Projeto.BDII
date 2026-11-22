@@ -25,7 +25,7 @@ Regras que a carga respeita (para os dados serem coerentes e não só aceitos pe
   - a turma de Banco de Dados II (CCO072) de 2026/2, seção A, fica com EXATAMENTE 1 vaga livre: é a "última vaga"
     para a frente de transações e concorrência reproduzir a anomalia.
 
-carga_v1
+03_carga_v1
 */
 ------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)

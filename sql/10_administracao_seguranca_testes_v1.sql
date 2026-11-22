@@ -17,7 +17,7 @@ Por que SET ROLE: o bd2 é superusuário e superusuário ignora RLS e GRANT. Con
 SET ROLE troca o papel; RESET ROLE volta para o bd2. Dentro dos blocos DO dos testes, SET LOCAL ROLE troca o papel
 só até o fim da transação.
 
-administracao_seguranca_testes_v1
+10_administracao_seguranca_testes_v1
 */
 ------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)

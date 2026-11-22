@@ -16,7 +16,7 @@ Detalhe: a coluna dt_atualizacao da mv_indicadores fica fora do md5. A restaura�
 Como rodar: F5 com o usuário bd2 (superusuário: enxerga todas as linhas, sem o filtro do RLS).
             Pode rodar quantas vezes quiser: não altera nada.
 
-administracao_backup_conferencia_v1
+11_administracao_backup_conferencia_v1
 */
 ------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula, ou matricula_restaurada no teste de restauração)

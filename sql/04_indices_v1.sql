@@ -19,7 +19,7 @@ Como ler o EXPLAIN (o que comparar no ANTES e no DEPOIS):
 Cada consulta é executada 2 vezes e só a 2ª vai para o resultado: a 1ª serve para "esquentar" o cache. Sem isso o
 ANTES pagaria a leitura do disco e o DEPOIS não, e a comparação não seria justa.
 
-indices_v1
+04_indices_v1
 */
 ------------------------------------------------------------------------------------------------------------------------
 -- Faz a conferência do banco (esperado: matricula)
