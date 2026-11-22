@@ -11,7 +11,7 @@ As duas abas usam o mesmo INSERT do 05c (só insere se ainda tiver vaga), então
 obs: só protege se TODAS as transações de matrícula rodarem em SERIALIZABLE.
 
 Como usar:
-  - rodar 05e_concorrencia_limpeza.sql e 05a_concorrencia_preparacao.sql nas DUAS abas antes (vagas_livres = 1);
+  - rodar 05e_concorrencia_limpeza_v1.sql e 05a_concorrencia_preparacao_v1.sql nas DUAS abas antes (vagas_livres = 1);
   - rodar cada passo SÓ na aba indicada, na ordem dos números (selecione o trecho e F5);
   - tirar print do erro do passo 3 (SQLSTATE 40001), do passo 5 (INSERT 0 0) e da prova do passo 6.
 */
@@ -71,4 +71,4 @@ SELECT t.qt_vagas, count(m.id_matricula) AS ocupadas, t.qt_vagas - count(m.id_ma
  WHERE t.id_turma = current_setting('projeto_bd2.turma_alvo')::int
  GROUP BY t.qt_vagas;
 
--- Depois: rodar 05e_concorrencia_limpeza.sql
+-- Depois: rodar 05e_concorrencia_limpeza_v1.sql

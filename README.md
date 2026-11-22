@@ -17,7 +17,7 @@ Mais detalhes de quem fez o que no AUTORES.md.
 
 - `modelo/` diagrama feito no draw.io
 - `sql/` scripts, na ordem que tem que rodar
-- `evidencias/` resultado do EXPLAIN antes e depois dos índices (gerado pelo `indices_v1.sql`), os prints da demonstração de concorrência e as saídas da frente de administração (materialized view, GIN, testes de segurança e backup)
+- `evidencias/` resultado do EXPLAIN antes e depois dos índices (gerado pelo `04_indices_v1.sql`), os prints da demonstração de concorrência e as saídas da frente de administração (materialized view, GIN, testes de segurança e backup)
 - `docs/` passo a passo do backup e da restauração
 
 ## Scripts
@@ -26,21 +26,21 @@ Rodar nesta ordem, todos no banco `matricula`:
 
 | Ordem | Arquivo | O que faz |
 |---|---|---|
-| 1 | `sql/modelo_fisico_v1.sql` | Apaga e cria o schema `projeto_bd2` com as 17 tabelas, domínios, enums e restrições. |
-| 2 | `sql/testes_restricoes_v1.sql` | Prova que as restrições funcionam: 14 testes que têm que ser barrados. Roda dentro de `BEGIN ... ROLLBACK`, então não deixa nada no banco. Pode pular. |
-| 3 | `sql/carga_v1.sql` | Popula o banco com dados de teste (ver "Carga de dados" abaixo). |
-| 4 | `sql/indices_v1.sql` | Cria 4 índices (um parcial) e mede o ganho de cada um com `EXPLAIN (ANALYZE, BUFFERS)` (ver "Índices" abaixo). |
-| 5 | `sql/concorrencia_preparacao_v1.sql` | Confere o banco e guarda a turma e os alunos da demonstração da "última vaga". Roda nas DUAS abas. |
-| 6 | `sql/concorrencia_erro_v1.sql` | Reproduz o erro: dois alunos pegam a última vaga e a turma fica com 46 matrículas para 45 vagas. |
-| 7 | `sql/concorrencia_solucao1_for_update_v1.sql` | Solução 1: trava a linha da turma com `SELECT ... FOR UPDATE`. |
-| 8 | `sql/concorrencia_solucao2_serializable_v1.sql` | Solução 2: isolamento `SERIALIZABLE`, o banco derruba uma das transações (erro 40001) e ela é repetida. |
-| - | `sql/concorrencia_limpeza_v1.sql` | Apaga as matrículas dos testes e volta a turma pra 1 vaga livre. Roda antes de cada teste de concorrência (ver "Transações e concorrência" abaixo). |
-| 9 | `sql/consultas_v1.sql` | As 10 consultas comentadas do Marco 1 (junção externa com agregação, duas recursivas, ranking com percentil, LAG e mais 5). Só lê. |
-| 10 | `sql/administracao_views_v1.sql` | Cria as views `vw_oferta`, `vw_vagas` e `vw_historico` e a materialized view `mv_indicadores`, e mede o ganho da materialized view com EXPLAIN. |
-| 11 | `sql/administracao_auditoria_v1.sql` | Gatilho que grava em `tb_log_matricula` o antes e o depois (JSONB) de toda mudança de matrícula e de nota, a trava que recusa INSERT direto no log, e o índice GIN no JSONB (bônus) com EXPLAIN antes e depois. |
-| 12 | `sql/administracao_seguranca_v1.sql` | Papéis aluno, secretaria e coordenacao, REVOKE de tudo, GRANT só do necessário e RLS (o aluno só vê o próprio histórico). **Roda por último**: fecha as permissões de tudo que já existe. |
-| 13 | `sql/administracao_seguranca_testes_v1.sql` | 29 testes de segurança (o que pode funciona, o que não pode é barrado, e a lista exata de permissões, papéis e policies). `BEGIN ... ROLLBACK`, não deixa nada no banco. |
-| 14 | `sql/administracao_backup_conferencia_v1.sql` | Impressão digital do banco (linhas e md5 de cada tabela e da estrutura) para provar que a restauração do backup ficou igual. Só lê. |
+| 1 | `sql/01_modelo_fisico_v1.sql` | Apaga e cria o schema `projeto_bd2` com as 17 tabelas, domínios, enums e restrições. |
+| 2 | `sql/02_testes_restricoes_v1.sql` | Prova que as restrições funcionam: 14 testes que têm que ser barrados. Roda dentro de `BEGIN ... ROLLBACK`, então não deixa nada no banco. Pode pular. |
+| 3 | `sql/03_carga_v1.sql` | Popula o banco com dados de teste (ver "Carga de dados" abaixo). |
+| 4 | `sql/04_indices_v1.sql` | Cria 4 índices (um parcial) e mede o ganho de cada um com `EXPLAIN (ANALYZE, BUFFERS)` (ver "Índices" abaixo). |
+| 5 | `sql/05a_concorrencia_preparacao_v1.sql` | Confere o banco e guarda a turma e os alunos da demonstração da "última vaga". Roda nas DUAS abas. |
+| 6 | `sql/05b_concorrencia_erro_v1.sql` | Reproduz o erro: dois alunos pegam a última vaga e a turma fica com 46 matrículas para 45 vagas. |
+| 7 | `sql/05c_concorrencia_solucao1_for_update_v1.sql` | Solução 1: trava a linha da turma com `SELECT ... FOR UPDATE`. |
+| 8 | `sql/05d_concorrencia_solucao2_serializable_v1.sql` | Solução 2: isolamento `SERIALIZABLE`, o banco derruba uma das transações (erro 40001) e ela é repetida. |
+| - | `sql/05e_concorrencia_limpeza_v1.sql` | Apaga as matrículas dos testes e volta a turma pra 1 vaga livre. Roda antes de cada teste de concorrência (ver "Transações e concorrência" abaixo). |
+| 9 | `sql/06_consultas_v1.sql` | As 10 consultas comentadas do Marco 1 (junção externa com agregação, duas recursivas, ranking com percentil, LAG e mais 5). Só lê. |
+| 10 | `sql/07_administracao_views_v1.sql` | Cria as views `vw_oferta`, `vw_vagas` e `vw_historico` e a materialized view `mv_indicadores`, e mede o ganho da materialized view com EXPLAIN. |
+| 11 | `sql/08_administracao_auditoria_v1.sql` | Gatilho que grava em `tb_log_matricula` o antes e o depois (JSONB) de toda mudança de matrícula e de nota, a trava que recusa INSERT direto no log, e o índice GIN no JSONB (bônus) com EXPLAIN antes e depois. |
+| 12 | `sql/09_administracao_seguranca_v1.sql` | Papéis aluno, secretaria e coordenacao, REVOKE de tudo, GRANT só do necessário e RLS (o aluno só vê o próprio histórico). **Roda por último**: fecha as permissões de tudo que já existe. |
+| 13 | `sql/10_administracao_seguranca_testes_v1.sql` | 29 testes de segurança (o que pode funciona, o que não pode é barrado, e a lista exata de permissões, papéis e policies). `BEGIN ... ROLLBACK`, não deixa nada no banco. |
+| 14 | `sql/11_administracao_backup_conferencia_v1.sql` | Impressão digital do banco (linhas e md5 de cada tabela e da estrutura) para provar que a restauração do backup ficou igual. Só lê. |
 
 O backup e a restauração são comandos no terminal, não um script do pgAdmin: o passo a passo está em [`docs/backup_restauracao.md`](docs/backup_restauracao.md).
 
@@ -85,12 +85,12 @@ Clica no banco matricula, abre o Tools > Query Tool, abre o arquivo pela pastinh
 
 Tudo do projeto fica no schema projeto_bd2 pra não misturar com o schema academico que já vem no banco do professor.
 
-- O `modelo_fisico_v1.sql` apaga e cria o schema de novo, então dá pra rodar várias vezes sem problema. **Mas isso apaga também os dados:** depois dele, roda o `carga_v1.sql` e o `indices_v1.sql` de novo.
-- O `carga_v1.sql` e o `indices_v1.sql` também podem ser rodados várias vezes (o primeiro zera as tabelas antes de popular, o segundo apaga os índices antes de criar).
-- O `carga_v1.sql` tem que rodar antes do `indices_v1.sql`.
+- O `01_modelo_fisico_v1.sql` apaga e cria o schema de novo, então dá pra rodar várias vezes sem problema. **Mas isso apaga também os dados:** depois dele, roda o `03_carga_v1.sql` e o `04_indices_v1.sql` de novo.
+- O `03_carga_v1.sql` e o `04_indices_v1.sql` também podem ser rodados várias vezes (o primeiro zera as tabelas antes de popular, o segundo apaga os índices antes de criar).
+- O `03_carga_v1.sql` tem que rodar antes do `04_indices_v1.sql`.
 - Os scripts de concorrência são diferentes: não é F5 no arquivo todo, é passo a passo em duas abas (ver "Transações e concorrência" abaixo).
-- Os scripts de administração (10 a 14) também podem rodar várias vezes. Se rodar o `administracao_views_v1.sql` de novo, roda o `administracao_seguranca_v1.sql` depois: a materialized view é recriada e perde as permissões.
-- Os papéis (aluno, secretaria, coordenacao) são do servidor, não do schema: continuam existindo depois do `modelo_fisico_v1.sql`. As permissões e as policies somem junto com as tabelas e voltam rodando o `administracao_seguranca_v1.sql`.
+- Os scripts de administração (10 a 14) também podem rodar várias vezes. Se rodar o `07_administracao_views_v1.sql` de novo, roda o `09_administracao_seguranca_v1.sql` depois: a materialized view é recriada e perde as permissões.
+- Os papéis (aluno, secretaria, coordenacao) são do servidor, não do schema: continuam existindo depois do `01_modelo_fisico_v1.sql`. As permissões e as policies somem junto com as tabelas e voltam rodando o `09_administracao_seguranca_v1.sql`.
 
 Antes de fazer consulta tem que colocar:
 
@@ -98,7 +98,7 @@ Antes de fazer consulta tem que colocar:
 SET search_path TO projeto_bd2, public;
 ```
 
-## Carga de dados (`carga_v1.sql`)
+## Carga de dados (`03_carga_v1.sql`)
 
 Dados **sintéticos** (nomes, CPFs, e-mails e notas inventados), feitos com `generate_series`, sem `random()`: toda vez que roda dá exatamente os mesmos dados. Não vêm do schema academico do professor.
 
@@ -126,7 +126,7 @@ O que os dados têm:
 
 No fim do script tem uma conferência que mostra as contagens e a vaga livre dessa turma.
 
-## Índices (`indices_v1.sql`)
+## Índices (`04_indices_v1.sql`)
 
 Para cada índice o script faz: EXPLAIN antes, CREATE INDEX, EXPLAIN depois da mesma consulta.
 
@@ -141,7 +141,7 @@ Os planos aparecem na aba **Messages** do pgAdmin e o resumo (tempo e páginas l
 
 ### Como gerar as evidências
 
-1. Roda o `modelo_fisico_v1.sql`, o `carga_v1.sql` e o `indices_v1.sql` nessa ordem.
+1. Roda o `01_modelo_fisico_v1.sql`, o `03_carga_v1.sql` e o `04_indices_v1.sql` nessa ordem.
 2. Copia o conteúdo da aba Messages pra `evidencias/explain_indices_v1.txt`.
 3. Exporta o resumo da aba Data Output (botão de download) pra `evidencias/resumo_indices_v1.csv`.
 4. Commit dos dois arquivos.
@@ -157,8 +157,8 @@ Alunos da demonstração: 26000001 (ABA 1) e 26000002 (ABA 2). São do 1º semes
 ### Como rodar
 
 1. Abre DUAS abas de Query Tool no banco matricula (ABA 1 e ABA 2).
-2. Roda o `concorrencia_limpeza_v1.sql` numa aba (F5). Tem que dar `vagas_livres = 1`.
-3. Roda o `concorrencia_preparacao_v1.sql` nas DUAS abas (F5). Os parâmetros valem só pra aba onde rodou.
+2. Roda o `05e_concorrencia_limpeza_v1.sql` numa aba (F5). Tem que dar `vagas_livres = 1`.
+3. Roda o `05a_concorrencia_preparacao_v1.sql` nas DUAS abas (F5). Os parâmetros valem só pra aba onde rodou.
 4. Abre o script do teste e roda **um passo de cada vez, só na aba indicada**: seleciona o trecho do passo e aperta F5 (sem selecionar ele roda o arquivo todo e estraga o teste).
 5. Antes do próximo teste, volta pro passo 2.
 
@@ -168,9 +168,9 @@ Se a limpeza der erro dizendo que tem transação aberta, roda `ROLLBACK;` nas o
 
 | Script | ABA 1 | ABA 2 | Resultado final |
 |---|---|---|---|
-| `concorrencia_erro_v1.sql` | matricula | também matricula | 46 ocupadas, `vagas_livres = -1` (o erro) |
-| `concorrencia_solucao1_for_update_v1.sql` | trava a turma e matricula | fica travada esperando, depois `INSERT 0 0` | 45 ocupadas, `vagas_livres = 0` |
-| `concorrencia_solucao2_serializable_v1.sql` | matricula | erro 40001, repete (retry) e dá `INSERT 0 0` | 45 ocupadas, `vagas_livres = 0` |
+| `05b_concorrencia_erro_v1.sql` | matricula | também matricula | 46 ocupadas, `vagas_livres = -1` (o erro) |
+| `05c_concorrencia_solucao1_for_update_v1.sql` | trava a turma e matricula | fica travada esperando, depois `INSERT 0 0` | 45 ocupadas, `vagas_livres = 0` |
+| `05d_concorrencia_solucao2_serializable_v1.sql` | matricula | erro 40001, repete (retry) e dá `INSERT 0 0` | 45 ocupadas, `vagas_livres = 0` |
 
 Nas duas soluções as duas abas rodam o mesmo INSERT, que só insere se ainda tiver vaga. Quem decide é o banco, não a pessoa olhando o resultado.
 
@@ -189,7 +189,7 @@ Salvar os prints em `evidencias/`:
 
 ## Administração e operação
 
-### Views e materialized view (`administracao_views_v1.sql`)
+### Views e materialized view (`07_administracao_views_v1.sql`)
 
 | Objeto | O que mostra | Como roda |
 |---|---|---|
@@ -200,7 +200,7 @@ Salvar os prints em `evidencias/`:
 
 Política de atualização da `mv_indicadores`: `REFRESH MATERIALIZED VIEW CONCURRENTLY` toda noite e depois do lançamento de notas, pela função `fn_atualizar_indicadores()` (a coordenação executa sem ser dona da view). O `CONCURRENTLY` não trava a leitura durante o refresh e precisa do índice único `uq_mv_indicadores`. Não tem refresh por gatilho: nota muda o tempo todo durante o semestre e indicador de gestão não precisa ser do segundo. A coluna `dt_atualizacao` mostra de quando são os números. Ganho medido: 30,4 ms e 426 páginas calculando na hora, 0,015 ms e 1 página lendo da materialized view.
 
-### Segurança (`administracao_seguranca_v1.sql`)
+### Segurança (`09_administracao_seguranca_v1.sql`)
 
 Negado por padrão: REVOKE de tudo para todos e GRANT só do que cada papel precisa.
 
@@ -221,7 +221,7 @@ Rodar o script de novo desfaz mudança feita à mão: os papéis voltam sem LOGI
 
 Os 29 testes, os 24 mutantes que provam que eles pegam erro e a saída estão em `evidencias/testes_seguranca_v1.txt`. Os testes 27 a 29 comparam o banco com a lista exata do permitido: permissão de tabela e de coluna, sequence, função e schema; atributos e grupos dos papéis; e as policies.
 
-### Auditoria e bônus JSONB com GIN (`administracao_auditoria_v1.sql`)
+### Auditoria e bônus JSONB com GIN (`08_administracao_auditoria_v1.sql`)
 
 Os gatilhos `trg_log_matricula` e `trg_log_historico` gravam cada INSERT, UPDATE e DELETE de `tb_matricula` e de `tb_historico` (as notas) em `tb_log_matricula`, com a tabela, a linha antes e depois em JSONB, o papel que fez (`CURRENT_USER`, em `nm_usuario`) e o usuário que conectou (`session_user`, em `usuario_sessao` dentro do JSON). O gatilho `trg_log_so_pelo_gatilho` recusa INSERT feito direto no log: a secretaria precisa de INSERT no log para o gatilho funcionar, e sem essa trava poderia inventar uma linha.
 
@@ -229,7 +229,7 @@ O índice GIN `ix_log_matricula_detalhe` (`jsonb_path_ops`) atende a busca "toda
 
 Fica fora do log: mudança no cadastro do aluno (`tb_aluno`), porque o log é por matrícula. A secretaria é o único papel que altera `tb_aluno`.
 
-O `administracao_auditoria_v1.sql` tem que rodar como superusuário (o `bd2` do ambiente do professor é): a carga inicial do log grava direto na tabela, e a trava só deixa superusuário fazer isso.
+O `08_administracao_auditoria_v1.sql` tem que rodar como superusuário (o `bd2` do ambiente do professor é): a carga inicial do log grava direto na tabela, e a trava só deixa superusuário fazer isso.
 
 ### Backup e restauração
 
@@ -244,7 +244,7 @@ Padrão de nomes:
 - tabelas com tb_, tipos enum com tp_, domínios com dm_ (views vw_, materialized views mv_, funções fn_, triggers trg_, procedures stp_, policies de RLS pol_)
 - toda PK é id_<tabela> e a FK tem o mesmo nome da PK que ela aponta
 - as outras colunas começam com: cd_ código, ds_ descrição, dt_ data, dd_ dia, aa_ ano, hr_ hora, ic_ sim/não, nm_ nome, qt_ valor não monetário, sg_ sigla, pc_ porcentagem, vl_ valor em dinheiro
-- arquivos .sql: minúsculo, com _ e terminando em _v1 (ex: `carga_v1.sql`); os da mesma frente começam igual (ex: `concorrencia_...`)
+- arquivos .sql: minúsculo, com _ e terminando em _v1 (ex: `03_carga_v1.sql`); os da mesma frente começam igual (ex: `concorrencia_...`)
 
 Tipos que a gente usou:
 

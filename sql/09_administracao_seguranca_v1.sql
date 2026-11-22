@@ -12,7 +12,7 @@ Como rodar:
   - pode rodar quantas vezes quiser, e cada rodada desfaz mudança feita à mão: CREATE ROLE só se não existir e
     ALTER ROLE acerta os atributos, os papéis saem de qualquer grupo que não seja o deles, REVOKE de tudo antes
     dos GRANT, e todas as policies das tabelas com RLS são apagadas antes de criar as daqui.
-  Os testes ficam em administracao_seguranca_testes_v1.sql.
+  Os testes ficam em 10_administracao_seguranca_testes_v1.sql.
 
 Como o banco sabe quem é o aluno:
   cada aluno tem um usuário (role) próprio chamado aluno_<matrícula>, membro do papel aluno.
@@ -118,7 +118,7 @@ GRANT USAGE ON SCHEMA projeto_bd2 TO aluno, secretaria, coordenacao;
 
 -- vw_oferta e vw_historico são security_invoker: rodam com as permissões de quem consulta. Por isso o papel
 -- precisa de SELECT nas tabelas que elas leem, e o RLS dessas tabelas vale dentro da view.
--- vw_vagas é do dono (bd2): só conta matrículas e não mostra de quem são (ver administracao_views_v1.sql).
+-- vw_vagas é do dono (bd2): só conta matrículas e não mostra de quem são (ver 07_administracao_views_v1.sql).
 GRANT SELECT ON vw_oferta, vw_vagas, vw_historico TO aluno, secretaria, coordenacao;
 GRANT SELECT ON mv_indicadores                    TO secretaria, coordenacao;
 
@@ -140,7 +140,7 @@ GRANT UPDATE (ds_status) ON tb_matricula TO secretaria;     -- na matrícula só
 -- GRANT por coluna: ela não informa nm_usuario nem dt_ocorrencia, que vêm do DEFAULT (CURRENT_USER e
 -- CURRENT_TIMESTAMP). Assim ninguém grava o log em nome de outra pessoa nem com outra data.
 -- E o INSERT só vale vindo do gatilho: INSERT direto é recusado pelo trg_log_so_pelo_gatilho
--- (administracao_auditoria_v1.sql), então ninguém inventa uma linha de log.
+-- (08_administracao_auditoria_v1.sql), então ninguém inventa uma linha de log.
 GRANT INSERT (id_matricula, ds_acao, ds_detalhe) ON tb_log_matricula TO secretaria;
 
 -- COORDENAÇÃO: acompanha indicadores e históricos, não altera nada.

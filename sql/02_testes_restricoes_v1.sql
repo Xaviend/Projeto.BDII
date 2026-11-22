@@ -1,6 +1,6 @@
 /*
 Autor: Iury Xavier Bomfim  - Modelagem Física e Desempenho
-Objetivo: provar que as restrições do modelo_fisico_v1.sql funcionam. Para cada regra:
+Objetivo: provar que as restrições do 01_modelo_fisico_v1.sql funcionam. Para cada regra:
           1 INSERT que PASSA (dado válido) e 1 que é BARRADO (dado inválido).
 
 Como funciona:

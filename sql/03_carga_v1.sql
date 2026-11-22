@@ -1,14 +1,14 @@
 /*
 Autor: Iury Xavier Bomfim  - Modelagem Física e Desempenho
-Objetivo: popular o schema projeto_bd2 (criado pelo modelo_fisico_v1.sql) com dados de teste, usando generate_series.
+Objetivo: popular o schema projeto_bd2 (criado pelo 01_modelo_fisico_v1.sql) com dados de teste, usando generate_series.
           O Marco 1 pede no mínimo 100 alunos, 6 turmas e 300 matrículas. Aqui ficam bem acima disso (2000 alunos,
           1536 turmas, ~30 mil matrículas) de propósito: com poucas linhas o PostgreSQL prefere ler a tabela inteira
-          e o EXPLAIN de antes e depois dos índices (indices_v1.sql) não mostraria ganho nenhum.
+          e o EXPLAIN de antes e depois dos índices (04_indices_v1.sql) não mostraria ganho nenhum.
 
 Os dados são SINTÉTICOS (nomes, CPFs, e-mails e notas inventados). Não vêm do schema academico do professor.
 
 Como rodar:
-  - rodar DEPOIS do modelo_fisico_v1.sql (precisa das 17 tabelas vazias ou não: o script limpa tudo antes);
+  - rodar DEPOIS do 01_modelo_fisico_v1.sql (precisa das 17 tabelas vazias ou não: o script limpa tudo antes);
   - tudo roda dentro de BEGIN ... COMMIT: se qualquer INSERT quebrar uma restrição, nada fica gravado;
   - pode rodar quantas vezes quiser: o TRUNCATE do início zera as tabelas e os ids (RESTART IDENTITY);
   - os dados são determinísticos (sem random()): toda execução gera exatamente os mesmos dados.
@@ -386,7 +386,7 @@ SELECT m.id_matricula, 'UPDATE', m.dt_matricula + INTERVAL '20 days', 'secretari
 
 -- Só 'concluida' e 'ativa' têm histórico (trancada e cancelada ficam sem: é o (0,1) de tb_historico).
 -- qt_media_final é coluna GERADA: não entra no INSERT. Para escolher a situação, a conta da média é repetida aqui
--- (a mesma fórmula do modelo_fisico_v1.sql) e a ck_historico_* garante que a situação bate com os números.
+-- (a mesma fórmula do 01_modelo_fisico_v1.sql) e a ck_historico_* garante que a situação bate com os números.
 --   disciplina "folha" = ninguém a exige como pré-requisito: só nelas há reprovação (notas e frequência mais baixas)
 --   'concluida': A1 e A2 lançadas; P3 só para folha com média abaixo de 5 (1 em cada 3 deles)
 --   'ativa'    : só A1 lançada, média ainda NULL, situação 'cursando'
@@ -433,7 +433,7 @@ SELECT id_matricula,
 
 COMMIT;
 
--- Estatísticas novas para o planejador: sem isto o EXPLAIN do indices_v1.sql usaria números velhos
+-- Estatísticas novas para o planejador: sem isto o EXPLAIN do 04_indices_v1.sql usaria números velhos
 ANALYZE tb_cidade, tb_campus, tb_feriado, tb_curso, tb_curriculo, tb_disciplina, tb_curriculo_disciplina,
         tb_pre_requisito, tb_professor, tb_periodo_letivo, tb_sala, tb_turma, tb_turma_horario,
         tb_aluno, tb_matricula, tb_historico, tb_log_matricula;

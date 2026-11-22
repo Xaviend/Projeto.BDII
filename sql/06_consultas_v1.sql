@@ -14,7 +14,7 @@ Objetivo: as 10 consultas comentadas do Marco 1. As 5 exigidas pelo enunciado s�
             10 UNION ALL x UNION
 
 Como rodar:
-  - rodar DEPOIS do modelo_fisico_v1.sql e do carga_v1.sql (os dados são sempre os mesmos, então os resultados
+  - rodar DEPOIS do 01_modelo_fisico_v1.sql e do 03_carga_v1.sql (os dados são sempre os mesmos, então os resultados
     também);
   - só lê (SELECT), não altera nada. Cada consulta pode ser selecionada e rodada sozinha com F5
     (o SET search_path do começo precisa ter rodado uma vez na aba).

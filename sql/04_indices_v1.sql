@@ -3,10 +3,10 @@ Autor: Iury Xavier Bomfim  - Modelagem Física e Desempenho
 Objetivo: criar 4 índices (um deles PARCIAL) e MEDIR o ganho de cada um com EXPLAIN (ANALYZE, BUFFERS) antes e depois.
 
 Como funciona:
-  - rodar DEPOIS do modelo_fisico_v1.sql e do carga_v1.sql (sem a carga as tabelas são pequenas demais e o
+  - rodar DEPOIS do 01_modelo_fisico_v1.sql e do 03_carga_v1.sql (sem a carga as tabelas são pequenas demais e o
     PostgreSQL ignora índice, porque ler a tabela inteira sai mais barato);
   - para cada índice o script faz: 1) EXPLAIN ANTES  2) CREATE INDEX  3) EXPLAIN DEPOIS da MESMA consulta;
-  - os planos aparecem na aba Messages do pgAdmin (RAISE NOTICE, como no testes_restricoes_v1.sql). O resumo com os
+  - os planos aparecem na aba Messages do pgAdmin (RAISE NOTICE, como no 02_testes_restricoes_v1.sql). O resumo com os
     tempos e os buffers de cada consulta aparece na aba Data Output, no fim. Salvar os dois em evidencias/;
   - pode rodar quantas vezes quiser: no começo ele apaga os 4 índices, então o "antes" é sempre sem índice.
 

@@ -7,7 +7,7 @@ Objetivo: (1) auditoria automática das matrículas e das notas: um gatilho (tri
               por EXPLAIN (ANALYZE, BUFFERS) antes e depois.
 
 Como rodar:
-  - rodar DEPOIS do administracao_views_v1.sql e ANTES do administracao_seguranca_v1.sql (o de segurança fecha
+  - rodar DEPOIS do 07_administracao_views_v1.sql e ANTES do 09_administracao_seguranca_v1.sql (o de segurança fecha
     as permissões de tudo que existe, inclusive da função deste gatilho);
   - pode rodar quantas vezes quiser (DROP ... IF EXISTS e a carga inicial do log não duplica linhas).
   Roda inteiro com F5. Os planos aparecem na aba Messages e o resumo na aba Data Output.
@@ -34,7 +34,7 @@ SET search_path TO projeto_bd2, public;
 -- nm_usuario e dt_ocorrencia vêm do DEFAULT da tabela (CURRENT_USER e CURRENT_TIMESTAMP).
 -- A função roda com as permissões de quem alterou a matrícula (não é SECURITY DEFINER): é assim que o
 -- CURRENT_USER do log mostra quem fez. Por isso a secretaria recebe INSERT no log (e só INSERT: ninguém além do
--- dono edita ou apaga o log), ver administracao_seguranca_v1.sql.
+-- dono edita ou apaga o log), ver 09_administracao_seguranca_v1.sql.
 -- usuario_sessao: o usuário que conectou no banco. Se a funcionária maria conecta e faz SET ROLE secretaria, o
 -- nm_usuario grava "secretaria" e o usuario_sessao grava "maria": o log diz o papel e a pessoa.
 -- SET search_path: o gatilho acha tb_log_matricula mesmo quando quem alterou a matrícula não fez
@@ -97,7 +97,7 @@ ROLLBACK;
 
 ------------------------------------------------------------------------------------------------------------------------
 -- BLOCO 2 - CARGA INICIAL DO LOG
--- O gatilho só registra o que acontece DEPOIS de criado. As ~25 mil matrículas da carga_v1.sql nasceram antes dele,
+-- O gatilho só registra o que acontece DEPOIS de criado. As ~25 mil matrículas da 03_carga_v1.sql nasceram antes dele,
 -- então o log não tinha a criação delas. Aqui o log recebe o INSERT de cada matrícula que ainda não tem, no mesmo
 -- formato que o gatilho grava, com a data em que a matrícula foi feita.
 -- NOT EXISTS: rodar de novo não duplica nada.

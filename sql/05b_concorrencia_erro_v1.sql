@@ -7,7 +7,7 @@ Por que acontece: o isolamento padrão do PostgreSQL é READ COMMITTED. Cada ses
 A regra "não passar das vagas" está só na cabeça da aplicação (conferir e inserir são dois passos), o banco não a impõe.
 
 Como usar:
-  - rodar 05e_concorrencia_limpeza.sql e 05a_concorrencia_preparacao.sql nas DUAS abas antes;
+  - rodar 05e_concorrencia_limpeza_v1.sql e 05a_concorrencia_preparacao_v1.sql nas DUAS abas antes;
   - rodar cada passo SÓ na aba indicada, na ordem dos números;
   - no pgAdmin, selecione o trecho do passo e aperte F5 (sem selecionar, ele roda o arquivo todo);
   - tirar print do passo 2 e do passo 5 (vagas_livres = -1) e salvar em evidencias/.
@@ -51,4 +51,4 @@ SELECT t.qt_vagas, count(m.id_matricula) AS ocupadas, t.qt_vagas - count(m.id_ma
  WHERE t.id_turma = current_setting('projeto_bd2.turma_alvo')::int
  GROUP BY t.qt_vagas;
 
--- PASSO 6 - antes de testar as soluções: rodar 05e_concorrencia_limpeza.sql
+-- PASSO 6 - antes de testar as soluções: rodar 05e_concorrencia_limpeza_v1.sql

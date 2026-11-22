@@ -5,7 +5,7 @@ Objetivo: preparar a demonstração da "última vaga" (CCO072 / 2026-2 / seção
 Como usar:
   - abrir DUAS abas de Query Tool no pgAdmin (ABA 1 e ABA 2), as duas no banco matricula;
   - rodar ESTE arquivo inteiro (F5) nas DUAS abas: os parâmetros abaixo valem só para a sessão (aba) onde foram criados;
-  - rodar depois de 01_modelo_fisico.sql, 02_carga.sql e 03_indices.sql;
+  - rodar depois de 01_modelo_fisico_v1.sql, 03_carga_v1.sql e 04_indices_v1.sql;
   - se der erro, ler a mensagem na aba Mensagens (banco errado, schema não criado ou turma não encontrada);
   - o bloco 2 (conferência) pode ser rodado de novo a qualquer momento para ver as vagas livres.
 
