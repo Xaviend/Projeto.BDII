@@ -10,7 +10,7 @@ Banco de Dados II (CCO072), prof. Rodrigo Gonçalves. Cada um cuidou de uma fren
 
 ## Iury Xavier Bomfim: modelagem física e desempenho
 
-- `modelo/modelo_logico.v3.drawio`: modelo lógico com as 17 tabelas, tipos, chaves e cardinalidades
+- `modelo/modelo_logico.v4.drawio`: modelo lógico com as 17 tabelas, tipos, chaves e cardinalidades
 - `sql/01_modelo_fisico_v1.sql`: schema `projeto_bd2`, tabelas, domínios, enums, restrições (CHECK, UNIQUE, FK composta, EXCLUDE de horário, colunas geradas)
 - `sql/02_testes_restricoes_v1.sql`: 14 testes que provam que as restrições barram dado errado
 - `sql/03_carga_v1.sql`: carga sintética e determinística (2000 alunos, 1536 turmas, ~25 mil matrículas)
@@ -41,4 +41,5 @@ Arthur conferiu a entrega inteira montando o banco do zero pelo README e fez os 
 
 - trouxe para a main o histórico das branches do Iury e do Eduardo, a versão mais nova do diagrama e o `05a_concorrencia_preparacao_v1.sql`, que só existia na branch do Eduardo;
 - numerou os scripts na ordem de execução e corrigiu os nomes e os números (36 para 35 vagas) nos comentários, no README e aqui;
-- gerou as evidências de índices e de concorrência na rodada do zero e escreveu a comparação entre FOR UPDATE e SERIALIZABLE no README, com as medições X1 a X3.
+- gerou as evidências de índices e de concorrência na rodada do zero e escreveu a comparação entre FOR UPDATE e SERIALIZABLE no README, com as medições X1 a X3;
+- conferiu o diagrama v4 do Iury contra o banco e prendeu de novo na coluna certa as 7 linhas que tinham se soltado, com os únicos de mais de uma coluna no rodapé.

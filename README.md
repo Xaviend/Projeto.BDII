@@ -276,7 +276,7 @@ Os três arquivos da administração foram gerados em 14/11, antes de os scripts
 
 ## Sobre o modelo
 
-O diagrama tá em modelo/modelo_logico.v3.drawio (abre no app.diagrams.net). Tem as 17 tabelas com os tipos, PK, FK e a cardinalidade (mín,máx) de cada relacionamento.
+O diagrama tá em modelo/modelo_logico.v4.drawio (abre no app.diagrams.net). Tem as 17 tabelas com os tipos, PK, FK e a cardinalidade (mín,máx) de cada relacionamento. O rodapé lista as regras que não viram linha: as duas FKs compostas, o EXCLUDE de horário e os únicos de mais de uma coluna.
 
 Padrão de nomes:
 
