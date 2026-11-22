@@ -7,12 +7,14 @@ Quando destrava, o segundo conta as vagas DE NOVO (no READ COMMITTED cada comand
 vê a turma cheia e não insere. Conferir e inserir passam a ser um passo protegido, sem "janela" entre os dois.
 
 As duas abas usam o mesmo INSERT, que só insere se ainda tiver vaga. A ABA 1 insere e a ABA 2 não (INSERT 0 0).
-Sem o FOR UPDATE esse INSERT não resolve sozinho: se as duas inserirem antes de algum COMMIT, as duas contam 44.
+Sem o FOR UPDATE esse INSERT não resolve sozinho: se as duas inserirem antes de algum COMMIT, as duas contam
+34 ocupadas, acham que tem vaga e as duas inserem.
 
 Como usar:
   - rodar 05e_concorrencia_limpeza_v1.sql e 05a_concorrencia_preparacao_v1.sql nas DUAS abas antes (vagas_livres = 1);
   - rodar cada passo SÓ na aba indicada, na ordem dos números (selecione o trecho e F5);
-  - tirar print do passo 3 (a aba "executando", travada), do passo 5 (INSERT 0 0) e do passo 6 (vagas_livres = 0).
+  - no passo 3 a ABA 2 fica "executando", travada, até a ABA 1 dar COMMIT no passo 4;
+  - a saída esperada das duas abas, passo a passo, está em evidencias/concorrencia_duas_abas_v1.txt.
 */
 ------------------------------------------------------------------------------------------------------------------------
 SET search_path TO projeto_bd2, public;   -- (as duas abas)
@@ -32,7 +34,7 @@ SELECT a.id_aluno, t.id_turma, now(), 'ativa'::projeto_bd2.tp_status_matricula
    AND t.qt_vagas > (SELECT count(*) FROM projeto_bd2.tb_matricula m
                       WHERE m.id_turma = t.id_turma AND m.ds_status = 'ativa');
 
--- PASSO 3 - ABA 2: tenta trancar a mesma turma. A aba FICA TRAVADA esperando (tire o print agora).
+-- PASSO 3 - ABA 2: tenta trancar a mesma turma. A aba FICA TRAVADA esperando.
 BEGIN;
 SELECT id_turma, qt_vagas FROM projeto_bd2.tb_turma
  WHERE id_turma = current_setting('projeto_bd2.turma_alvo')::int

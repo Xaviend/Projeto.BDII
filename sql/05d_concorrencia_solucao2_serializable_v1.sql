@@ -13,7 +13,7 @@ obs: só protege se TODAS as transações de matrícula rodarem em SERIALIZABLE.
 Como usar:
   - rodar 05e_concorrencia_limpeza_v1.sql e 05a_concorrencia_preparacao_v1.sql nas DUAS abas antes (vagas_livres = 1);
   - rodar cada passo SÓ na aba indicada, na ordem dos números (selecione o trecho e F5);
-  - tirar print do erro do passo 3 (SQLSTATE 40001), do passo 5 (INSERT 0 0) e da prova do passo 6.
+  - a saída esperada das duas abas, passo a passo, está em evidencias/concorrencia_duas_abas_v1.txt.
 */
 ------------------------------------------------------------------------------------------------------------------------
 SET search_path TO projeto_bd2, public;   -- (as duas abas)
@@ -36,7 +36,7 @@ SELECT a.id_aluno, t.id_turma, now(), 'ativa'::projeto_bd2.tp_status_matricula
                       WHERE m.id_turma = t.id_turma AND m.ds_status = 'ativa');
 COMMIT;
 
--- PASSO 3 - ABA 2: mesmo INSERT com o aluno B. ERRO ESPERADO aqui (tire o print):
+-- PASSO 3 - ABA 2: mesmo INSERT com o aluno B. ERRO ESPERADO aqui:
 --   ERROR: could not serialize access due to read/write dependencies among transactions
 --   SQLSTATE 40001
 -- o erro pode aparecer no INSERT ou no COMMIT, nos dois casos é o comportamento esperado

@@ -1,6 +1,6 @@
 /*
 Autor: Eduardo Serra - Transações e Concorrência
-Objetivo: REPRODUZIR O ERRO. Dois alunos pegam a última vaga ao mesmo tempo e a turma estoura (46 ativas para 45 vagas).
+Objetivo: REPRODUZIR O ERRO. Dois alunos pegam a última vaga ao mesmo tempo e a turma estoura (36 ativas para 35 vagas).
 
 Por que acontece: o isolamento padrão do PostgreSQL é READ COMMITTED. Cada sessão só enxerga o que já foi confirmado
 (COMMIT) por outras. As duas contam as vagas ANTES de qualquer uma confirmar, as duas veem "1 livre" e as duas inserem.
@@ -10,7 +10,7 @@ Como usar:
   - rodar 05e_concorrencia_limpeza_v1.sql e 05a_concorrencia_preparacao_v1.sql nas DUAS abas antes;
   - rodar cada passo SÓ na aba indicada, na ordem dos números;
   - no pgAdmin, selecione o trecho do passo e aperte F5 (sem selecionar, ele roda o arquivo todo);
-  - tirar print do passo 2 e do passo 5 (vagas_livres = -1) e salvar em evidencias/.
+  - a saída esperada das duas abas, passo a passo, está em evidencias/concorrencia_duas_abas_v1.txt.
 */
 ------------------------------------------------------------------------------------------------------------------------
 SET search_path TO projeto_bd2, public;   -- (as duas abas)
