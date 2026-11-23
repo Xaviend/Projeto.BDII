@@ -2,7 +2,7 @@
 Autor: Iury Xavier Bomfim  - Modelagem Física e Desempenho
 Objetivo: popular o schema projeto_bd2 (criado pelo 01_modelo_fisico_v1.sql) com dados de teste, usando generate_series.
           O Marco 1 pede no mínimo 100 alunos, 6 turmas e 300 matrículas. Aqui ficam bem acima disso (2000 alunos,
-          1536 turmas, ~30 mil matrículas) de propósito: com poucas linhas o PostgreSQL prefere ler a tabela inteira
+          1536 turmas, 24.964 matrículas) de propósito: com poucas linhas o PostgreSQL prefere ler a tabela inteira
           e o EXPLAIN de antes e depois dos índices (04_indices_v1.sql) não mostraria ganho nenhum.
 
 Os dados são SINTÉTICOS (nomes, CPFs, e-mails e notas inventados). Não vêm do schema academico do professor.

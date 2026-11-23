@@ -35,11 +35,15 @@ SET search_path TO projeto_bd2, public;
 -- (dependência funcional), então não precisa repetir todas no GROUP BY.
 -- LEFT JOIN no horário: turma ainda sem horário cadastrado continua aparecendo na oferta.
 
+-- ic_periodo_atual: semestre atual = o período letivo mais recente cadastrado (mesma regra do 06_consultas_v1.sql),
+-- e não a data de hoje. Pela data, depois do fim do 2026/2 (11/12) nenhum semestre seria o atual e a oferta sumiria.
 CREATE OR REPLACE VIEW vw_oferta
 WITH (security_invoker = true) AS
 SELECT t.id_turma,
        p.aa_periodo || '/' || p.cd_semestre                          AS ds_periodo,
-       (current_date BETWEEN p.dt_inicio AND p.dt_fim)               AS ic_periodo_atual,
+       (p.id_periodo_letivo = (SELECT pa.id_periodo_letivo FROM tb_periodo_letivo pa
+                                ORDER BY pa.aa_periodo DESC, pa.cd_semestre DESC
+                                LIMIT 1))                            AS ic_periodo_atual,
        d.cd_disciplina,
        d.nm_disciplina,
        d.qt_ch_total,
@@ -85,7 +89,9 @@ CREATE OR REPLACE VIEW vw_vagas
 WITH (security_invoker = false) AS
 SELECT t.id_turma,
        p.aa_periodo || '/' || p.cd_semestre                          AS ds_periodo,
-       (current_date BETWEEN p.dt_inicio AND p.dt_fim)               AS ic_periodo_atual,
+       (p.id_periodo_letivo = (SELECT pa.id_periodo_letivo FROM tb_periodo_letivo pa
+                                ORDER BY pa.aa_periodo DESC, pa.cd_semestre DESC
+                                LIMIT 1))                            AS ic_periodo_atual,   -- mesma regra da vw_oferta
        d.cd_disciplina,
        d.nm_disciplina,
        t.cd_turma,
@@ -162,8 +168,10 @@ SELECT ds_periodo, cd_disciplina, nm_disciplina, qt_nota_a1, qt_nota_a2, qt_nota
 --   2. A consulta por trás junta 6 tabelas e agrega ~25 mil históricos; o painel é aberto muitas vezes por dia.
 --      Recalcular a cada abertura é desperdício: grava-se o resultado uma vez e lê-se muitas.
 --   3. A coordenação aceita ver o número de ontem: indicador de desempenho não é dado de tempo real.
---   Por isso: REFRESH uma vez por noite (agendado, ver docs/administracao.md) e também logo depois de cada
---   lançamento de notas, chamando fn_atualizar_indicadores().
+--   Por isso: REFRESH logo depois de cada lançamento de notas e uma vez por noite, sempre chamando
+--   fn_atualizar_indicadores(). O agendamento da noite fica fora do banco: o ambiente da disciplina não tem o
+--   pg_cron, então em produção seria um job do servidor (cron) rodando "SELECT projeto_bd2.fn_atualizar_indicadores();".
+--   Neste projeto o REFRESH é chamado à mão (BLOCO 5).
 --   O REFRESH é CONCURRENTLY: quem está lendo o painel não fica travado durante a atualização. O preço é que
 --   ele exige um índice ÚNICO na materialized view e é mais lento que o REFRESH comum (compara o novo resultado
 --   com o antigo e só troca as linhas que mudaram).
@@ -234,7 +242,11 @@ SELECT ds_periodo, qt_alunos, qt_historicos, qt_aprovados, qt_reprovados_nota, q
 -- BLOCO 5 - A PROVA DE QUE A MATERIALIZED VIEW FICA "CONGELADA" ATÉ O REFRESH
 -- Roda dentro de BEGIN ... ROLLBACK: no fim, nada fica gravado.
 -- Simula o lançamento da A2 de um aluno de CCO em 2026/2: ele passa de 'cursando' para 'aprovado'.
+-- COMMIT antes do BEGIN: o F5 manda o arquivo inteiro de uma vez, e aí o PostgreSQL trata tudo como UMA transação.
+-- Sem este COMMIT, o ROLLBACK do fim do bloco desfaria também as views e a materialized view criadas acima.
+-- Rodando passo a passo, o COMMIT só avisa "there is no transaction in progress" (WARNING inofensivo).
 
+COMMIT;
 BEGIN;
 
 UPDATE tb_historico h

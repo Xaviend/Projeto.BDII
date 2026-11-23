@@ -1,139 +1,139 @@
 EVIDENCIAS - ADMINISTRACAO E OPERACAO (Arthur Coupe)
 Materialized view, view de vagas e indice GIN no JSONB (bonus), com EXPLAIN (ANALYZE, BUFFERS)
-Gerado em 14/11/2026 20:09 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
-com os scripts na ordem do README. Tempo (ms) muda de maquina para maquina; buffers quase nao mudam.
+Gerado em 23/11/2026 09:46 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
+com os scripts 01 a 11 na ordem do README. Tempo (ms) muda de maquina para maquina; buffers quase nao mudam.
 buffers = paginas de 8 kB lidas (hit = da memoria, read = do disco).
 
-########## sql/administracao_views_v1.sql (aba Messages) ##########
+########## sql/07_administracao_views_v1.sql (aba Messages) ##########
 === 1 indicadores de CCO - NA HORA (SEM MV) ===
-GroupAggregate  (cost=2039.10..2203.02 rows=4 width=84) (actual time=26.387..30.074 rows=8 loops=1)
+GroupAggregate  (cost=2039.15..2203.07 rows=4 width=84) (actual time=18.583..20.624 rows=8 loops=1)
   Group Key: p.aa_periodo, p.cd_semestre
   Buffers: shared hit=426
-  ->  Sort  (cost=2039.10..2059.58 rows=8192 width=23) (actual time=26.247..26.986 rows=18772 loops=1)
+  ->  Sort  (cost=2039.15..2059.63 rows=8192 width=23) (actual time=18.497..18.954 rows=18772 loops=1)
         Sort Key: p.aa_periodo, p.cd_semestre, m.id_aluno
         Sort Method: quicksort  Memory: 1648kB
         Buffers: shared hit=426
-        ->  Hash Join  (cost=835.32..1506.62 rows=8192 width=23) (actual time=6.366..17.305 rows=18772 loops=1)
+        ->  Hash Join  (cost=835.35..1506.67 rows=8192 width=23) (actual time=4.695..12.146 rows=18772 loops=1)
               Hash Cond: (t.id_periodo_letivo = p.id_periodo_letivo)
               Buffers: shared hit=426
-              ->  Hash Join  (cost=834.14..1472.55 rows=8192 width=23) (actual time=6.348..15.184 rows=18772 loops=1)
+              ->  Hash Join  (cost=834.17..1472.60 rows=8192 width=23) (actual time=4.686..10.554 rows=18772 loops=1)
                     Hash Cond: (m.id_turma = t.id_turma)
                     Buffers: shared hit=425
-                    ->  Hash Join  (cost=787.58..1404.43 rows=8192 width=23) (actual time=5.975..12.349 rows=18772 loops=1)
+                    ->  Hash Join  (cost=787.61..1404.48 rows=8192 width=23) (actual time=4.536..8.603 rows=18772 loops=1)
                           Hash Cond: (h.id_matricula = m.id_matricula)
                           Buffers: shared hit=413
-                          ->  Seq Scan on tb_historico h  (cost=0.00..442.77 rows=24577 width=19) (actual time=0.007..1.407 rows=24577 loops=1)
+                          ->  Seq Scan on tb_historico h  (cost=0.00..442.77 rows=24577 width=19) (actual time=0.001..0.933 rows=24577 loops=1)
                                 Buffers: shared hit=197
-                          ->  Hash  (cost=683.56..683.56 rows=8321 width=12) (actual time=5.958..5.963 rows=19050 loops=1)
+                          ->  Hash  (cost=683.59..683.59 rows=8322 width=12) (actual time=4.530..4.533 rows=19050 loops=1)
                                 Buckets: 32768 (originally 16384)  Batches: 1 (originally 1)  Memory Usage: 1075kB
                                 Buffers: shared hit=216
-                                ->  Hash Join  (cost=73.06..683.56 rows=8321 width=12) (actual time=0.487..4.326 rows=19050 loops=1)
+                                ->  Hash Join  (cost=73.06..683.59 rows=8322 width=12) (actual time=0.320..3.306 rows=19050 loops=1)
                                       Hash Cond: (m.id_aluno = a.id_aluno)
                                       Buffers: shared hit=216
-                                      ->  Seq Scan on tb_matricula m  (cost=0.00..433.64 rows=24964 width=12) (actual time=0.004..1.259 rows=24964 loops=1)
+                                      ->  Seq Scan on tb_matricula m  (cost=0.00..433.65 rows=24965 width=12) (actual time=0.001..0.897 rows=24964 loops=1)
                                             Buffers: shared hit=184
-                                      ->  Hash  (cost=64.72..64.72 rows=667 width=4) (actual time=0.479..0.482 rows=1200 loops=1)
+                                      ->  Hash  (cost=64.72..64.72 rows=667 width=4) (actual time=0.317..0.319 rows=1200 loops=1)
                                             Buckets: 2048 (originally 1024)  Batches: 1 (originally 1)  Memory Usage: 59kB
                                             Buffers: shared hit=32
-                                            ->  Hash Join  (cost=1.05..64.72 rows=667 width=4) (actual time=0.013..0.387 rows=1200 loops=1)
+                                            ->  Hash Join  (cost=1.05..64.72 rows=667 width=4) (actual time=0.006..0.257 rows=1200 loops=1)
                                                   Hash Cond: (a.id_curso = c.id_curso)
                                                   Buffers: shared hit=32
-                                                  ->  Seq Scan on tb_aluno a  (cost=0.00..51.00 rows=2000 width=8) (actual time=0.003..0.161 rows=2000 loops=1)
+                                                  ->  Seq Scan on tb_aluno a  (cost=0.00..51.00 rows=2000 width=8) (actual time=0.001..0.077 rows=2000 loops=1)
                                                         Buffers: shared hit=31
-                                                  ->  Hash  (cost=1.04..1.04 rows=1 width=4) (actual time=0.006..0.007 rows=1 loops=1)
+                                                  ->  Hash  (cost=1.04..1.04 rows=1 width=4) (actual time=0.003..0.003 rows=1 loops=1)
                                                         Buckets: 1024  Batches: 1  Memory Usage: 9kB
                                                         Buffers: shared hit=1
-                                                        ->  Seq Scan on tb_curso c  (cost=0.00..1.04 rows=1 width=4) (actual time=0.004..0.005 rows=1 loops=1)
+                                                        ->  Seq Scan on tb_curso c  (cost=0.00..1.04 rows=1 width=4) (actual time=0.002..0.002 rows=1 loops=1)
                                                               Filter: ((cd_curso)::text = 'CCO'::text)
                                                               Rows Removed by Filter: 2
                                                               Buffers: shared hit=1
-                    ->  Hash  (cost=27.36..27.36 rows=1536 width=8) (actual time=0.368..0.369 rows=1536 loops=1)
+                    ->  Hash  (cost=27.36..27.36 rows=1536 width=8) (actual time=0.147..0.148 rows=1536 loops=1)
                           Buckets: 2048  Batches: 1  Memory Usage: 76kB
                           Buffers: shared hit=12
-                          ->  Seq Scan on tb_turma t  (cost=0.00..27.36 rows=1536 width=8) (actual time=0.004..0.150 rows=1536 loops=1)
+                          ->  Seq Scan on tb_turma t  (cost=0.00..27.36 rows=1536 width=8) (actual time=0.002..0.074 rows=1536 loops=1)
                                 Buffers: shared hit=12
-              ->  Hash  (cost=1.08..1.08 rows=8 width=8) (actual time=0.014..0.014 rows=8 loops=1)
+              ->  Hash  (cost=1.08..1.08 rows=8 width=8) (actual time=0.006..0.006 rows=8 loops=1)
                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
                     Buffers: shared hit=1
-                    ->  Seq Scan on tb_periodo_letivo p  (cost=0.00..1.08 rows=8 width=8) (actual time=0.009..0.010 rows=8 loops=1)
+                    ->  Seq Scan on tb_periodo_letivo p  (cost=0.00..1.08 rows=8 width=8) (actual time=0.003..0.004 rows=8 loops=1)
                           Buffers: shared hit=1
 Planning:
-  Buffers: shared hit=41
-Planning Time: 1.787 ms
-Execution Time: 30.434 ms
+  Buffers: shared hit=45
+Planning Time: 0.398 ms
+Execution Time: 20.786 ms
 
 
 === 1 indicadores de CCO - LIDO DA MV ===
-Seq Scan on mv_indicadores  (cost=0.00..1.25 rows=1 width=84) (actual time=0.005..0.008 rows=8 loops=1)
+Seq Scan on mv_indicadores  (cost=0.00..1.25 rows=1 width=84) (actual time=0.003..0.006 rows=8 loops=1)
   Filter: ((cd_curso)::text = 'CCO'::text)
   Rows Removed by Filter: 12
   Buffers: shared hit=1
-Planning Time: 0.028 ms
-Execution Time: 0.015 ms
+Planning Time: 0.017 ms
+Execution Time: 0.011 ms
 
 
 === 2 vagas de uma turma pela vw_vagas - VIEW ===
-Subquery Scan on vw_vagas  (cost=43.80..43.96 rows=5 width=18) (actual time=0.093..0.096 rows=1 loops=1)
+Subquery Scan on vw_vagas  (cost=43.80..43.96 rows=5 width=18) (actual time=0.078..0.080 rows=1 loops=1)
   Buffers: shared hit=41
   InitPlan 1 (returns $2)
-    ->  Nested Loop  (cost=0.28..10.74 rows=1 width=4) (actual time=0.015..0.017 rows=1 loops=1)
+    ->  Nested Loop  (cost=0.28..10.74 rows=1 width=4) (actual time=0.013..0.014 rows=1 loops=1)
           Buffers: shared hit=5
-          ->  Seq Scan on tb_periodo_letivo p_1  (cost=0.00..1.12 rows=1 width=4) (actual time=0.002..0.002 rows=1 loops=1)
+          ->  Seq Scan on tb_periodo_letivo p_1  (cost=0.00..1.12 rows=1 width=4) (actual time=0.003..0.003 rows=1 loops=1)
                 Filter: ((aa_periodo = 2026) AND (cd_semestre = 2))
                 Rows Removed by Filter: 7
                 Buffers: shared hit=1
-          ->  Nested Loop  (cost=0.28..9.61 rows=1 width=8) (actual time=0.012..0.013 rows=1 loops=1)
+          ->  Nested Loop  (cost=0.28..9.61 rows=1 width=8) (actual time=0.009..0.010 rows=1 loops=1)
                 Buffers: shared hit=4
-                ->  Seq Scan on tb_disciplina d_1  (cost=0.00..1.30 rows=1 width=4) (actual time=0.002..0.002 rows=1 loops=1)
+                ->  Seq Scan on tb_disciplina d_1  (cost=0.00..1.30 rows=1 width=4) (actual time=0.002..0.003 rows=1 loops=1)
                       Filter: ((cd_disciplina)::text = 'CCO072'::text)
                       Rows Removed by Filter: 23
                       Buffers: shared hit=1
-                ->  Index Scan using uq_turma_cd on tb_turma t_1  (cost=0.28..8.30 rows=1 width=12) (actual time=0.009..0.010 rows=1 loops=1)
+                ->  Index Scan using uq_turma_cd on tb_turma t_1  (cost=0.28..8.30 rows=1 width=12) (actual time=0.006..0.006 rows=1 loops=1)
                       Index Cond: (((cd_turma)::text = 'A'::text) AND (id_disciplina = d_1.id_disciplina) AND (id_periodo_letivo = p_1.id_periodo_letivo))
                       Buffers: shared hit=3
-  ->  GroupAggregate  (cost=33.06..33.17 rows=5 width=471) (actual time=0.093..0.094 rows=1 loops=1)
+  ->  GroupAggregate  (cost=33.06..33.17 rows=5 width=471) (actual time=0.078..0.079 rows=1 loops=1)
         Group Key: p.id_periodo_letivo, d.id_disciplina
         Buffers: shared hit=41
-        ->  Sort  (cost=33.06..33.07 rows=5 width=18) (actual time=0.085..0.088 rows=34 loops=1)
+        ->  Sort  (cost=33.06..33.07 rows=5 width=18) (actual time=0.072..0.074 rows=34 loops=1)
               Sort Key: p.id_periodo_letivo, d.id_disciplina
               Sort Method: quicksort  Memory: 26kB
               Buffers: shared hit=41
-              ->  Hash Join  (cost=6.14..33.00 rows=5 width=18) (actual time=0.046..0.078 rows=34 loops=1)
+              ->  Hash Join  (cost=6.14..33.00 rows=5 width=18) (actual time=0.041..0.065 rows=34 loops=1)
                     Hash Cond: (t.id_disciplina = d.id_disciplina)
                     Buffers: shared hit=41
-                    ->  Nested Loop Left Join  (cost=4.60..31.45 rows=5 width=18) (actual time=0.034..0.060 rows=34 loops=1)
+                    ->  Nested Loop Left Join  (cost=4.60..31.45 rows=5 width=18) (actual time=0.030..0.049 rows=34 loops=1)
                           Buffers: shared hit=40
-                          ->  Nested Loop  (cost=0.28..9.47 rows=1 width=14) (actual time=0.024..0.024 rows=1 loops=1)
+                          ->  Nested Loop  (cost=0.28..9.47 rows=1 width=14) (actual time=0.020..0.020 rows=1 loops=1)
                                 Join Filter: (t.id_periodo_letivo = p.id_periodo_letivo)
                                 Rows Removed by Join Filter: 7
                                 Buffers: shared hit=9
-                                ->  Index Scan using uq_turma_id_periodo on tb_turma t  (cost=0.28..8.29 rows=1 width=14) (actual time=0.021..0.022 rows=1 loops=1)
+                                ->  Index Scan using uq_turma_id_periodo on tb_turma t  (cost=0.28..8.29 rows=1 width=14) (actual time=0.018..0.018 rows=1 loops=1)
                                       Index Cond: (id_turma = $2)
                                       Buffers: shared hit=8
                                 ->  Seq Scan on tb_periodo_letivo p  (cost=0.00..1.08 rows=8 width=4) (actual time=0.001..0.001 rows=8 loops=1)
                                       Buffers: shared hit=1
-                          ->  Bitmap Heap Scan on tb_matricula m  (cost=4.32..21.92 rows=5 width=8) (actual time=0.009..0.032 rows=34 loops=1)
+                          ->  Bitmap Heap Scan on tb_matricula m  (cost=4.32..21.92 rows=5 width=8) (actual time=0.009..0.024 rows=34 loops=1)
                                 Recheck Cond: ((id_turma = $2) AND (ds_status = 'ativa'::tp_status_matricula))
                                 Heap Blocks: exact=29
                                 Buffers: shared hit=31
-                                ->  Bitmap Index Scan on ix_matricula_turma_ativa  (cost=0.00..4.32 rows=5 width=0) (actual time=0.004..0.004 rows=34 loops=1)
+                                ->  Bitmap Index Scan on ix_matricula_turma_ativa  (cost=0.00..4.32 rows=5 width=0) (actual time=0.005..0.005 rows=34 loops=1)
                                       Index Cond: (id_turma = $2)
                                       Buffers: shared hit=2
-                    ->  Hash  (cost=1.24..1.24 rows=24 width=4) (actual time=0.008..0.009 rows=24 loops=1)
+                    ->  Hash  (cost=1.24..1.24 rows=24 width=4) (actual time=0.008..0.008 rows=24 loops=1)
                           Buckets: 1024  Batches: 1  Memory Usage: 9kB
                           Buffers: shared hit=1
-                          ->  Seq Scan on tb_disciplina d  (cost=0.00..1.24 rows=24 width=4) (actual time=0.003..0.004 rows=24 loops=1)
+                          ->  Seq Scan on tb_disciplina d  (cost=0.00..1.24 rows=24 width=4) (actual time=0.003..0.005 rows=24 loops=1)
                                 Buffers: shared hit=1
 Planning:
   Buffers: shared hit=16
-Planning Time: 0.874 ms
-Execution Time: 0.138 ms
+Planning Time: 0.406 ms
+Execution Time: 0.118 ms
 
 ---------- resumo (aba Data Output) ----------
               consulta              |      fase_1      |  ms_1  | buffers_1 |   fase_2   | ms_2  | buffers_2 | vezes_mais_rapido 
 ------------------------------------+------------------+--------+-----------+------------+-------+-----------+-------------------
- 1 indicadores de CCO               | na hora (sem mv) | 30.434 |       426 | lido da mv | 0.015 |         1 |            2028.9
- 2 vagas de uma turma pela vw_vagas | view             |  0.138 |        41 |            |       |           |                  
+ 1 indicadores de CCO               | na hora (sem mv) | 20.786 |       426 | lido da mv | 0.011 |         1 |            1889.6
+ 2 vagas de uma turma pela vw_vagas | view             |  0.118 |        41 |            |       |           |                  
 (2 rows)
 
 ---------- materialized view desatualizada ate o REFRESH (BLOCO 5, dentro de BEGIN ... ROLLBACK) ----------
@@ -144,7 +144,7 @@ Execution Time: 0.138 ms
 
          atualizado_em         
 -------------------------------
- 2026-11-14 23:07:31.803465+00
+ 2026-11-23 12:47:42.849022+00
 (1 row)
 
       momento      | aprovados_na_tabela | aprovados_na_mv 
@@ -153,142 +153,142 @@ Execution Time: 0.138 ms
 (1 row)
 
 ROLLBACK
-psql:/tmp/sql/administracao_views_v1.sql:278: NOTICE:  schema "pg_temp" does not exist, skipping
 DROP TABLE
+psql:/tmp/final/07_administracao_views_v1.sql:290: NOTICE:  schema "pg_temp" does not exist, skipping
 CREATE TABLE
 CREATE FUNCTION
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:  
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:  
 === 1 indicadores de CCO - NA HORA (SEM MV) ===
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:  GroupAggregate  (cost=2039.10..2203.02 rows=4 width=84) (actual time=26.387..30.074 rows=8 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:    Group Key: p.aa_periodo, p.cd_semestre
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:    Buffers: shared hit=426
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:    ->  Sort  (cost=2039.10..2059.58 rows=8192 width=23) (actual time=26.247..26.986 rows=18772 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:          Sort Key: p.aa_periodo, p.cd_semestre, m.id_aluno
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:          Sort Method: quicksort  Memory: 1648kB
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:          Buffers: shared hit=426
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:          ->  Hash Join  (cost=835.32..1506.62 rows=8192 width=23) (actual time=6.366..17.305 rows=18772 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                Hash Cond: (t.id_periodo_letivo = p.id_periodo_letivo)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                Buffers: shared hit=426
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                ->  Hash Join  (cost=834.14..1472.55 rows=8192 width=23) (actual time=6.348..15.184 rows=18772 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                      Hash Cond: (m.id_turma = t.id_turma)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                      Buffers: shared hit=425
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                      ->  Hash Join  (cost=787.58..1404.43 rows=8192 width=23) (actual time=5.975..12.349 rows=18772 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                            Hash Cond: (h.id_matricula = m.id_matricula)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                            Buffers: shared hit=413
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                            ->  Seq Scan on tb_historico h  (cost=0.00..442.77 rows=24577 width=19) (actual time=0.007..1.407 rows=24577 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                  Buffers: shared hit=197
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                            ->  Hash  (cost=683.56..683.56 rows=8321 width=12) (actual time=5.958..5.963 rows=19050 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                  Buckets: 32768 (originally 16384)  Batches: 1 (originally 1)  Memory Usage: 1075kB
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                  Buffers: shared hit=216
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                  ->  Hash Join  (cost=73.06..683.56 rows=8321 width=12) (actual time=0.487..4.326 rows=19050 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                        Hash Cond: (m.id_aluno = a.id_aluno)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                        Buffers: shared hit=216
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                        ->  Seq Scan on tb_matricula m  (cost=0.00..433.64 rows=24964 width=12) (actual time=0.004..1.259 rows=24964 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                              Buffers: shared hit=184
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                        ->  Hash  (cost=64.72..64.72 rows=667 width=4) (actual time=0.479..0.482 rows=1200 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                              Buckets: 2048 (originally 1024)  Batches: 1 (originally 1)  Memory Usage: 59kB
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                              Buffers: shared hit=32
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                              ->  Hash Join  (cost=1.05..64.72 rows=667 width=4) (actual time=0.013..0.387 rows=1200 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                    Hash Cond: (a.id_curso = c.id_curso)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                    Buffers: shared hit=32
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                    ->  Seq Scan on tb_aluno a  (cost=0.00..51.00 rows=2000 width=8) (actual time=0.003..0.161 rows=2000 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                          Buffers: shared hit=31
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                    ->  Hash  (cost=1.04..1.04 rows=1 width=4) (actual time=0.006..0.007 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                          Buckets: 1024  Batches: 1  Memory Usage: 9kB
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                          Buffers: shared hit=1
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                          ->  Seq Scan on tb_curso c  (cost=0.00..1.04 rows=1 width=4) (actual time=0.004..0.005 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                                Filter: ((cd_curso)::text = 'CCO'::text)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                                Rows Removed by Filter: 2
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                                                Buffers: shared hit=1
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                      ->  Hash  (cost=27.36..27.36 rows=1536 width=8) (actual time=0.368..0.369 rows=1536 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                            Buckets: 2048  Batches: 1  Memory Usage: 76kB
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                            Buffers: shared hit=12
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                            ->  Seq Scan on tb_turma t  (cost=0.00..27.36 rows=1536 width=8) (actual time=0.004..0.150 rows=1536 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                                  Buffers: shared hit=12
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                ->  Hash  (cost=1.08..1.08 rows=8 width=8) (actual time=0.014..0.014 rows=8 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                      Buckets: 1024  Batches: 1  Memory Usage: 9kB
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                      Buffers: shared hit=1
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                      ->  Seq Scan on tb_periodo_letivo p  (cost=0.00..1.08 rows=8 width=8) (actual time=0.009..0.010 rows=8 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:                            Buffers: shared hit=1
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:  Planning:
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:    Buffers: shared hit=41
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:  Planning Time: 1.787 ms
-psql:/tmp/sql/administracao_views_v1.sql:320: NOTICE:  Execution Time: 30.434 ms
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:  GroupAggregate  (cost=2039.15..2203.07 rows=4 width=84) (actual time=18.583..20.624 rows=8 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:    Group Key: p.aa_periodo, p.cd_semestre
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:    Buffers: shared hit=426
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:    ->  Sort  (cost=2039.15..2059.63 rows=8192 width=23) (actual time=18.497..18.954 rows=18772 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:          Sort Key: p.aa_periodo, p.cd_semestre, m.id_aluno
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:          Sort Method: quicksort  Memory: 1648kB
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:          Buffers: shared hit=426
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:          ->  Hash Join  (cost=835.35..1506.67 rows=8192 width=23) (actual time=4.695..12.146 rows=18772 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                Hash Cond: (t.id_periodo_letivo = p.id_periodo_letivo)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                Buffers: shared hit=426
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                ->  Hash Join  (cost=834.17..1472.60 rows=8192 width=23) (actual time=4.686..10.554 rows=18772 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                      Hash Cond: (m.id_turma = t.id_turma)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                      Buffers: shared hit=425
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                      ->  Hash Join  (cost=787.61..1404.48 rows=8192 width=23) (actual time=4.536..8.603 rows=18772 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                            Hash Cond: (h.id_matricula = m.id_matricula)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                            Buffers: shared hit=413
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                            ->  Seq Scan on tb_historico h  (cost=0.00..442.77 rows=24577 width=19) (actual time=0.001..0.933 rows=24577 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                  Buffers: shared hit=197
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                            ->  Hash  (cost=683.59..683.59 rows=8322 width=12) (actual time=4.530..4.533 rows=19050 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                  Buckets: 32768 (originally 16384)  Batches: 1 (originally 1)  Memory Usage: 1075kB
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                  Buffers: shared hit=216
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                  ->  Hash Join  (cost=73.06..683.59 rows=8322 width=12) (actual time=0.320..3.306 rows=19050 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                        Hash Cond: (m.id_aluno = a.id_aluno)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                        Buffers: shared hit=216
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                        ->  Seq Scan on tb_matricula m  (cost=0.00..433.65 rows=24965 width=12) (actual time=0.001..0.897 rows=24964 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                              Buffers: shared hit=184
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                        ->  Hash  (cost=64.72..64.72 rows=667 width=4) (actual time=0.317..0.319 rows=1200 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                              Buckets: 2048 (originally 1024)  Batches: 1 (originally 1)  Memory Usage: 59kB
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                              Buffers: shared hit=32
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                              ->  Hash Join  (cost=1.05..64.72 rows=667 width=4) (actual time=0.006..0.257 rows=1200 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                    Hash Cond: (a.id_curso = c.id_curso)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                    Buffers: shared hit=32
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                    ->  Seq Scan on tb_aluno a  (cost=0.00..51.00 rows=2000 width=8) (actual time=0.001..0.077 rows=2000 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                          Buffers: shared hit=31
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                    ->  Hash  (cost=1.04..1.04 rows=1 width=4) (actual time=0.003..0.003 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                          Buckets: 1024  Batches: 1  Memory Usage: 9kB
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                          Buffers: shared hit=1
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                          ->  Seq Scan on tb_curso c  (cost=0.00..1.04 rows=1 width=4) (actual time=0.002..0.002 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                                Filter: ((cd_curso)::text = 'CCO'::text)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                                Rows Removed by Filter: 2
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                                                Buffers: shared hit=1
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                      ->  Hash  (cost=27.36..27.36 rows=1536 width=8) (actual time=0.147..0.148 rows=1536 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                            Buckets: 2048  Batches: 1  Memory Usage: 76kB
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                            Buffers: shared hit=12
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                            ->  Seq Scan on tb_turma t  (cost=0.00..27.36 rows=1536 width=8) (actual time=0.002..0.074 rows=1536 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                                  Buffers: shared hit=12
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                ->  Hash  (cost=1.08..1.08 rows=8 width=8) (actual time=0.006..0.006 rows=8 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                      Buckets: 1024  Batches: 1  Memory Usage: 9kB
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                      Buffers: shared hit=1
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                      ->  Seq Scan on tb_periodo_letivo p  (cost=0.00..1.08 rows=8 width=8) (actual time=0.003..0.004 rows=8 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:                            Buffers: shared hit=1
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:  Planning:
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:    Buffers: shared hit=45
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:  Planning Time: 0.398 ms
+psql:/tmp/final/07_administracao_views_v1.sql:332: NOTICE:  Execution Time: 20.786 ms
  fn_medir 
 ----------
  
 (1 row)
 
-psql:/tmp/sql/administracao_views_v1.sql:326: NOTICE:  
+psql:/tmp/final/07_administracao_views_v1.sql:338: NOTICE:  
 === 1 indicadores de CCO - LIDO DA MV ===
-psql:/tmp/sql/administracao_views_v1.sql:326: NOTICE:  Seq Scan on mv_indicadores  (cost=0.00..1.25 rows=1 width=84) (actual time=0.005..0.008 rows=8 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:326: NOTICE:    Filter: ((cd_curso)::text = 'CCO'::text)
-psql:/tmp/sql/administracao_views_v1.sql:326: NOTICE:    Rows Removed by Filter: 12
-psql:/tmp/sql/administracao_views_v1.sql:326: NOTICE:    Buffers: shared hit=1
-psql:/tmp/sql/administracao_views_v1.sql:326: NOTICE:  Planning Time: 0.028 ms
-psql:/tmp/sql/administracao_views_v1.sql:326: NOTICE:  Execution Time: 0.015 ms
+psql:/tmp/final/07_administracao_views_v1.sql:338: NOTICE:  Seq Scan on mv_indicadores  (cost=0.00..1.25 rows=1 width=84) (actual time=0.003..0.006 rows=8 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:338: NOTICE:    Filter: ((cd_curso)::text = 'CCO'::text)
+psql:/tmp/final/07_administracao_views_v1.sql:338: NOTICE:    Rows Removed by Filter: 12
+psql:/tmp/final/07_administracao_views_v1.sql:338: NOTICE:    Buffers: shared hit=1
+psql:/tmp/final/07_administracao_views_v1.sql:338: NOTICE:  Planning Time: 0.017 ms
+psql:/tmp/final/07_administracao_views_v1.sql:338: NOTICE:  Execution Time: 0.011 ms
  fn_medir 
 ----------
  
 (1 row)
 
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:  
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:  
 === 2 vagas de uma turma pela vw_vagas - VIEW ===
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:  Subquery Scan on vw_vagas  (cost=43.80..43.96 rows=5 width=18) (actual time=0.093..0.096 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:    Buffers: shared hit=41
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:    InitPlan 1 (returns $2)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:      ->  Nested Loop  (cost=0.28..10.74 rows=1 width=4) (actual time=0.015..0.017 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:            Buffers: shared hit=5
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:            ->  Seq Scan on tb_periodo_letivo p_1  (cost=0.00..1.12 rows=1 width=4) (actual time=0.002..0.002 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                  Filter: ((aa_periodo = 2026) AND (cd_semestre = 2))
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                  Rows Removed by Filter: 7
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                  Buffers: shared hit=1
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:            ->  Nested Loop  (cost=0.28..9.61 rows=1 width=8) (actual time=0.012..0.013 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                  Buffers: shared hit=4
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                  ->  Seq Scan on tb_disciplina d_1  (cost=0.00..1.30 rows=1 width=4) (actual time=0.002..0.002 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                        Filter: ((cd_disciplina)::text = 'CCO072'::text)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                        Rows Removed by Filter: 23
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                        Buffers: shared hit=1
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                  ->  Index Scan using uq_turma_cd on tb_turma t_1  (cost=0.28..8.30 rows=1 width=12) (actual time=0.009..0.010 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                        Index Cond: (((cd_turma)::text = 'A'::text) AND (id_disciplina = d_1.id_disciplina) AND (id_periodo_letivo = p_1.id_periodo_letivo))
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                        Buffers: shared hit=3
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:    ->  GroupAggregate  (cost=33.06..33.17 rows=5 width=471) (actual time=0.093..0.094 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:          Group Key: p.id_periodo_letivo, d.id_disciplina
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:          Buffers: shared hit=41
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:          ->  Sort  (cost=33.06..33.07 rows=5 width=18) (actual time=0.085..0.088 rows=34 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                Sort Key: p.id_periodo_letivo, d.id_disciplina
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                Sort Method: quicksort  Memory: 26kB
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                Buffers: shared hit=41
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                ->  Hash Join  (cost=6.14..33.00 rows=5 width=18) (actual time=0.046..0.078 rows=34 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                      Hash Cond: (t.id_disciplina = d.id_disciplina)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                      Buffers: shared hit=41
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                      ->  Nested Loop Left Join  (cost=4.60..31.45 rows=5 width=18) (actual time=0.034..0.060 rows=34 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                            Buffers: shared hit=40
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                            ->  Nested Loop  (cost=0.28..9.47 rows=1 width=14) (actual time=0.024..0.024 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                  Join Filter: (t.id_periodo_letivo = p.id_periodo_letivo)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                  Rows Removed by Join Filter: 7
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                  Buffers: shared hit=9
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                  ->  Index Scan using uq_turma_id_periodo on tb_turma t  (cost=0.28..8.29 rows=1 width=14) (actual time=0.021..0.022 rows=1 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                        Index Cond: (id_turma = $2)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                        Buffers: shared hit=8
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                  ->  Seq Scan on tb_periodo_letivo p  (cost=0.00..1.08 rows=8 width=4) (actual time=0.001..0.001 rows=8 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                        Buffers: shared hit=1
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                            ->  Bitmap Heap Scan on tb_matricula m  (cost=4.32..21.92 rows=5 width=8) (actual time=0.009..0.032 rows=34 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                  Recheck Cond: ((id_turma = $2) AND (ds_status = 'ativa'::tp_status_matricula))
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                  Heap Blocks: exact=29
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                  Buffers: shared hit=31
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                  ->  Bitmap Index Scan on ix_matricula_turma_ativa  (cost=0.00..4.32 rows=5 width=0) (actual time=0.004..0.004 rows=34 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                        Index Cond: (id_turma = $2)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                        Buffers: shared hit=2
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                      ->  Hash  (cost=1.24..1.24 rows=24 width=4) (actual time=0.008..0.009 rows=24 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                            Buckets: 1024  Batches: 1  Memory Usage: 9kB
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                            Buffers: shared hit=1
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                            ->  Seq Scan on tb_disciplina d  (cost=0.00..1.24 rows=24 width=4) (actual time=0.003..0.004 rows=24 loops=1)
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:                                  Buffers: shared hit=1
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:  Planning:
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:    Buffers: shared hit=16
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:  Planning Time: 0.874 ms
-psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:  Execution Time: 0.138 ms
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:  Subquery Scan on vw_vagas  (cost=43.80..43.96 rows=5 width=18) (actual time=0.078..0.080 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:    Buffers: shared hit=41
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:    InitPlan 1 (returns $2)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:      ->  Nested Loop  (cost=0.28..10.74 rows=1 width=4) (actual time=0.013..0.014 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:            Buffers: shared hit=5
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:            ->  Seq Scan on tb_periodo_letivo p_1  (cost=0.00..1.12 rows=1 width=4) (actual time=0.003..0.003 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                  Filter: ((aa_periodo = 2026) AND (cd_semestre = 2))
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                  Rows Removed by Filter: 7
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                  Buffers: shared hit=1
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:            ->  Nested Loop  (cost=0.28..9.61 rows=1 width=8) (actual time=0.009..0.010 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                  Buffers: shared hit=4
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                  ->  Seq Scan on tb_disciplina d_1  (cost=0.00..1.30 rows=1 width=4) (actual time=0.002..0.003 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                        Filter: ((cd_disciplina)::text = 'CCO072'::text)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                        Rows Removed by Filter: 23
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                        Buffers: shared hit=1
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                  ->  Index Scan using uq_turma_cd on tb_turma t_1  (cost=0.28..8.30 rows=1 width=12) (actual time=0.006..0.006 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                        Index Cond: (((cd_turma)::text = 'A'::text) AND (id_disciplina = d_1.id_disciplina) AND (id_periodo_letivo = p_1.id_periodo_letivo))
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                        Buffers: shared hit=3
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:    ->  GroupAggregate  (cost=33.06..33.17 rows=5 width=471) (actual time=0.078..0.079 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:          Group Key: p.id_periodo_letivo, d.id_disciplina
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:          Buffers: shared hit=41
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:          ->  Sort  (cost=33.06..33.07 rows=5 width=18) (actual time=0.072..0.074 rows=34 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                Sort Key: p.id_periodo_letivo, d.id_disciplina
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                Sort Method: quicksort  Memory: 26kB
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                Buffers: shared hit=41
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                ->  Hash Join  (cost=6.14..33.00 rows=5 width=18) (actual time=0.041..0.065 rows=34 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                      Hash Cond: (t.id_disciplina = d.id_disciplina)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                      Buffers: shared hit=41
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                      ->  Nested Loop Left Join  (cost=4.60..31.45 rows=5 width=18) (actual time=0.030..0.049 rows=34 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                            Buffers: shared hit=40
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                            ->  Nested Loop  (cost=0.28..9.47 rows=1 width=14) (actual time=0.020..0.020 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                  Join Filter: (t.id_periodo_letivo = p.id_periodo_letivo)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                  Rows Removed by Join Filter: 7
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                  Buffers: shared hit=9
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                  ->  Index Scan using uq_turma_id_periodo on tb_turma t  (cost=0.28..8.29 rows=1 width=14) (actual time=0.018..0.018 rows=1 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                        Index Cond: (id_turma = $2)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                        Buffers: shared hit=8
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                  ->  Seq Scan on tb_periodo_letivo p  (cost=0.00..1.08 rows=8 width=4) (actual time=0.001..0.001 rows=8 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                        Buffers: shared hit=1
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                            ->  Bitmap Heap Scan on tb_matricula m  (cost=4.32..21.92 rows=5 width=8) (actual time=0.009..0.024 rows=34 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                  Recheck Cond: ((id_turma = $2) AND (ds_status = 'ativa'::tp_status_matricula))
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                  Heap Blocks: exact=29
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                  Buffers: shared hit=31
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                  ->  Bitmap Index Scan on ix_matricula_turma_ativa  (cost=0.00..4.32 rows=5 width=0) (actual time=0.005..0.005 rows=34 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                        Index Cond: (id_turma = $2)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                        Buffers: shared hit=2
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                      ->  Hash  (cost=1.24..1.24 rows=24 width=4) (actual time=0.008..0.008 rows=24 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                            Buckets: 1024  Batches: 1  Memory Usage: 9kB
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                            Buffers: shared hit=1
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                            ->  Seq Scan on tb_disciplina d  (cost=0.00..1.24 rows=24 width=4) (actual time=0.003..0.005 rows=24 loops=1)
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:                                  Buffers: shared hit=1
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:  Planning:
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:    Buffers: shared hit=16
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:  Planning Time: 0.406 ms
+psql:/tmp/final/07_administracao_views_v1.sql:349: NOTICE:  Execution Time: 0.118 ms
  fn_medir 
 ----------
  
@@ -296,38 +296,42 @@ psql:/tmp/sql/administracao_views_v1.sql:337: NOTICE:  Execution Time: 0.138 ms
 
               consulta              |      fase_1      |  ms_1  | buffers_1 |   fase_2   | ms_2  | buffers_2 | vezes_mais_rapido 
 ------------------------------------+------------------+--------+-----------+------------+-------+-----------+-------------------
- 1 indicadores de CCO               | na hora (sem mv) | 30.434 |       426 | lido da mv | 0.015 |         1 |            2028.9
- 2 vagas de uma turma pela vw_vagas | view             |  0.138 |        41 |            |       |           |                  
+ 1 indicadores de CCO               | na hora (sem mv) | 20.786 |       426 | lido da mv | 0.011 |         1 |            1889.6
+ 2 vagas de uma turma pela vw_vagas | view             |  0.118 |        41 |            |       |           |                  
 (2 rows)
 
-########## sql/administracao_auditoria_v1.sql (aba Messages) ##########
+########## sql/08_administracao_auditoria_v1.sql (aba Messages) ##########
 === 5 log de um aluno (JSONB @>) - ANTES ===
-Seq Scan on tb_log_matricula  (cost=0.00..1529.78 rows=2 width=19) (actual time=0.533..55.022 rows=22 loops=1)
+Seq Scan on tb_log_matricula  (cost=0.00..1529.78 rows=2 width=19) (actual time=0.298..16.927 rows=22 loops=1)
   Filter: (ds_detalhe @> jsonb_build_object('depois', jsonb_build_object('id_aluno', (current_setting('projeto_bd2.aluno_alvo'::text))::integer)))
   Rows Removed by Filter: 25329
   Buffers: shared hit=896
-Planning Time: 0.071 ms
-Execution Time: 55.037 ms
+Planning Time: 0.037 ms
+Execution Time: 16.932 ms
 
 CREATE INDEX
 
 === 5 log de um aluno (JSONB @>) - DEPOIS ===
-Bitmap Heap Scan on tb_log_matricula  (cost=12.86..20.62 rows=2 width=19) (actual time=0.016..0.044 rows=22 loops=1)
+Bitmap Heap Scan on tb_log_matricula  (cost=12.86..20.62 rows=2 width=19) (actual time=0.011..0.028 rows=22 loops=1)
   Recheck Cond: (ds_detalhe @> jsonb_build_object('depois', jsonb_build_object('id_aluno', (current_setting('projeto_bd2.aluno_alvo'::text))::integer)))
   Heap Blocks: exact=2
   Buffers: shared hit=5
-  ->  Bitmap Index Scan on ix_log_matricula_detalhe  (cost=0.00..12.86 rows=2 width=0) (actual time=0.010..0.010 rows=22 loops=1)
+  ->  Bitmap Index Scan on ix_log_matricula_detalhe  (cost=0.00..12.86 rows=2 width=0) (actual time=0.007..0.007 rows=22 loops=1)
         Index Cond: (ds_detalhe @> jsonb_build_object('depois', jsonb_build_object('id_aluno', (current_setting('projeto_bd2.aluno_alvo'::text))::integer)))
         Buffers: shared hit=3
 Planning:
   Buffers: shared hit=1
-Planning Time: 0.080 ms
-Execution Time: 0.057 ms
+Planning Time: 0.061 ms
+Execution Time: 0.037 ms
 
+
+=== tamanho do indice GIN ===
+ix_log_matricula_detalhe: 3104 kB
+tb_log_matricula        : 7168 kB
 
 ---------- resumo (aba Data Output) ----------
            consulta           | ms_antes | ms_depois | vezes_mais_rapido | buffers_antes | buffers_depois 
 ------------------------------+----------+-----------+-------------------+---------------+----------------
- 5 log de um aluno (JSONB @>) |   55.037 |     0.057 |             965.6 |           896 |              5
+ 5 log de um aluno (JSONB @>) |   16.932 |     0.037 |             457.6 |           896 |              5
 (1 row)
 

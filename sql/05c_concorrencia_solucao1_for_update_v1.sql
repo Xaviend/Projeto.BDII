@@ -8,10 +8,12 @@ vê a turma cheia e não insere. Conferir e inserir passam a ser um passo proteg
 
 As duas abas usam o mesmo INSERT, que só insere se ainda tiver vaga. A ABA 1 insere e a ABA 2 não (INSERT 0 0).
 Sem o FOR UPDATE esse INSERT não resolve sozinho: se as duas inserirem antes de algum COMMIT, as duas contam
-34 ocupadas, acham que tem vaga e as duas inserem.
+34 ocupadas, acham que tem vaga e as duas inserem (medido: X4 no fim de evidencias/concorrencia_duas_abas_v1.txt,
+a turma fica com 36).
 
 Como usar:
-  - rodar 05e_concorrencia_limpeza_v1.sql e 05a_concorrencia_preparacao_v1.sql nas DUAS abas antes (vagas_livres = 1);
+  - rodar antes 05e_concorrencia_limpeza_v1.sql numa aba só e 05a_concorrencia_preparacao_v1.sql nas DUAS abas
+    (vagas_livres = 1);
   - rodar cada passo SÓ na aba indicada, na ordem dos números (selecione o trecho e F5);
   - no passo 3 a ABA 2 fica "executando", travada, até a ABA 1 dar COMMIT no passo 4;
   - a saída esperada das duas abas, passo a passo, está em evidencias/concorrencia_duas_abas_v1.txt.

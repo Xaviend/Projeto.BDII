@@ -11,7 +11,8 @@ As duas abas usam o mesmo INSERT do 05c (só insere se ainda tiver vaga), então
 obs: só protege se TODAS as transações de matrícula rodarem em SERIALIZABLE.
 
 Como usar:
-  - rodar 05e_concorrencia_limpeza_v1.sql e 05a_concorrencia_preparacao_v1.sql nas DUAS abas antes (vagas_livres = 1);
+  - rodar antes 05e_concorrencia_limpeza_v1.sql numa aba só e 05a_concorrencia_preparacao_v1.sql nas DUAS abas
+    (vagas_livres = 1);
   - rodar cada passo SÓ na aba indicada, na ordem dos números (selecione o trecho e F5);
   - a saída esperada das duas abas, passo a passo, está em evidencias/concorrencia_duas_abas_v1.txt.
 */
