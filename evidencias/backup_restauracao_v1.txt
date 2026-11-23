@@ -1,5 +1,5 @@
 EVIDENCIAS - BACKUP E RESTAURACAO
-Ensaio de docs/backup_restauracao.md em 23/11/2026 09:46 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1), banco criado do zero com os scripts 01 a 11
+Ensaio de docs/backup_restauracao.md em 23/11/2026 10:59 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1), banco criado do zero com os scripts 01 a 11
 e um schema academico simulado ao lado (como o do professor). Impressao digital = sql/11_administracao_backup_conferencia_v1.sql.
 Backup: pg_dump -n projeto_bd2 -Fc (so o schema do projeto) e pg_dumpall --roles-only --no-role-passwords
 (linhas com senha no arquivo de papeis: 0).
@@ -15,7 +15,7 @@ dados: tb_curso | 3 | fc935864309755b252df29d1da02733f
 dados: tb_disciplina | 24 | c85402bc2cc977e3032ab02f734ef84d
 dados: tb_feriado | 7 | 40e3532f6de1693f7546f620cfe5512c
 dados: tb_historico | 24577 | 3dec296eac8cfb3aa2c07fe2e031d181
-dados: tb_log_matricula | 25351 | c628e91fb999a1f8e7470b4a82a635f6
+dados: tb_log_matricula | 25351 | fd9a30192db5aa5ec9031cfb35507348
 dados: tb_matricula | 24964 | 84d09d25e345ea4b869fbbe8187e21e4
 dados: tb_periodo_letivo | 8 | 0e14e505fa47224bf3adf0132879c647
 dados: tb_pre_requisito | 25 | a41ed90209fec87ec07f65231880f216
@@ -30,16 +30,16 @@ estrutura: permissoes (GRANT) em tabelas, colunas e schema | 272 | aaa8f1f742d80
 estrutura: policies de RLS | 9 | 9152c1d9d5456926c78139116974dd09
 estrutura: tabelas com RLS ligado e forcado | 3 | f75ac5a65306f6e6d187b48b2d376bad
 estrutura: views e materialized views | 4 | 079f0223440a1e7f4b12da79d8b7b6be
->>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | bdd7688afe07644b01e502138288b6ba
+>>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | cd513632d774092d68b6067fb6abd50c
 
 ########## depois de cada restauracao (so a linha geral; o diff de todas as linhas deu vazio) ##########
-caso A, banco separado matricula_restaurada : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | bdd7688afe07644b01e502138288b6ba
-caso B, schema apagado e restaurado         : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | bdd7688afe07644b01e502138288b6ba
-caso C, erro humano e volta ao backup       : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | bdd7688afe07644b01e502138288b6ba
-caso D, servidor novo vazio                 : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | bdd7688afe07644b01e502138288b6ba
+caso A, banco separado matricula_restaurada : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | cd513632d774092d68b6067fb6abd50c
+caso B, schema apagado e restaurado         : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | cd513632d774092d68b6067fb6abd50c
+caso C, erro humano e volta ao backup       : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | cd513632d774092d68b6067fb6abd50c
+caso D, servidor novo vazio                 : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | cd513632d774092d68b6067fb6abd50c
 
 controle (caso C, com o erro e antes de restaurar, tem que ser DIFERENTE):
->>> IMPRESSAO DIGITAL GERAL (compare esta) | 80460 | 55e3345f17c7cdd0aa845f6b7a287d44
+>>> IMPRESSAO DIGITAL GERAL (compare esta) | 80460 | 0d0a4a77c096ff74adaaf0a15519f143
 
 schema academico intacto depois dos casos B e C (linhas em academico.aluno_prof, esperado 1): 1 e 1
 testes de seguranca (10) depois da restauracao, esperado 29 OK: caso C 29 OK, caso D 29 OK

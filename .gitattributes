@@ -1,0 +1,2 @@
+# Scripts do bash quebram com CRLF ("$'\r': command not found"): ficam sempre com LF, mesmo no Windows.
+*.sh text eol=lf

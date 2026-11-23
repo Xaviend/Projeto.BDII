@@ -1,0 +1,102 @@
+EVIDENCIAS - CADA SCRIPT RODADO COMO O F5 DO PGADMIN, NO POSTGRESQL 16 E NO 17
+Gerado em 23/11/2026 10:59 (horario de Brasilia). O F5 do Query Tool manda o arquivo inteiro numa mensagem so (pgAdmin 4:
+tools/sqleditor/utils/start_running_query.py chama conn.execute_async(sql) sem parametros, e o psycopg 3 usa
+o protocolo simples, send_query). Aqui cada arquivo vai do mesmo jeito (psql -c com o arquivo inteiro), num
+container novo e vazio para cada versao. 'estado' = o que ficou gravado no banco depois daquele F5.
+Os WARNING do 07 e do 08 sao o "there is no transaction in progress" do COMMIT explicado nos dois scripts.
+A impressao digital do 11 muda de uma versao para a outra (o 17 tem permissoes a mais no catalogo); ela
+compara antes e depois do backup no MESMO servidor.
+
+imagem: postgres:16, versao: postgres (PostgreSQL) 16.16 (Debian 16.16-1.pgdg13+1)
+== F5 na ordem do README, banco novo
+01                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=0 matriculas=0 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=0
+02_antes_da_carga                                exit=0 | OK: 79 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=0 matriculas=0 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=0
+03                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
+02_depois_da_carga                               exit=0 | OK: 79 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
+04                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=42 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
+06                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=42 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
+07                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=43 views=3 mv=1 gatilhos=0 policies=0 papeis=0 log=387
+08                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=0 papeis=0 log=25351
+09                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+10                                               exit=0 | OK: 29 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+11                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+   impressao digital:  >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | cd513632d774092d68b6067fb6abd50c
+== F5 de novo (07 a 11), para provar que roda mais de uma vez
+07_2a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+08_2a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+09_2a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+10_2a                                            exit=0 | OK: 29 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+11_2a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+== 01 de novo apaga tudo; depois 03, 04, 07, 08, 09 e 10 de novo (o que o README manda)
+01_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+03_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+04_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+07_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+08_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+09_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+10_3a                                            exit=0 | OK: 29 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+container removido: 0 sobrando
+
+imagem: postgres:17, versao: postgres (PostgreSQL) 17.12 (Debian 17.12-1.pgdg13+1)
+== F5 na ordem do README, banco novo
+01                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=0 matriculas=0 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=0
+02_antes_da_carga                                exit=0 | OK: 79 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=0 matriculas=0 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=0
+03                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
+02_depois_da_carga                               exit=0 | OK: 79 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
+04                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=42 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
+06                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=42 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
+07                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=43 views=3 mv=1 gatilhos=0 policies=0 papeis=0 log=387
+08                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=0 papeis=0 log=25351
+09                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+10                                               exit=0 | OK: 29 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+11                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+   impressao digital:  >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80531 | e62a2d6597cc016e527ec1bcb5da2909
+== F5 de novo (07 a 11), para provar que roda mais de uma vez
+07_2a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+08_2a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+09_2a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+10_2a                                            exit=0 | OK: 29 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+11_2a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+== 01 de novo apaga tudo; depois 03, 04, 07, 08, 09 e 10 de novo (o que o README manda)
+01_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+03_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+04_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+07_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+08_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
+09_3a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+10_3a                                            exit=0 | OK: 29 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+   estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
+container removido: 0 sobrando

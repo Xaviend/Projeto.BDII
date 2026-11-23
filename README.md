@@ -19,6 +19,7 @@ Mais detalhes de quem fez o que no AUTORES.md.
 - `sql/` scripts, numerados na ordem em que têm que rodar
 - `evidencias/` resultado do EXPLAIN antes e depois dos índices (gerado pelo `04_indices_v1.sql`), a saída das duas abas na demonstração de concorrência e as saídas da frente de administração (materialized view, GIN, testes de segurança e backup). Lista completa em "Evidências" no fim deste arquivo
 - `docs/` passo a passo do backup e da restauração
+- `ferramentas/` os scripts que geraram as evidências numa rodada do zero (ver "Evidências" no fim)
 
 ## Scripts
 
@@ -27,7 +28,7 @@ Rodar na ordem do número do arquivo, todos no banco `matricula`:
 | Ordem | Arquivo | O que faz |
 |---|---|---|
 | 01 | `sql/01_modelo_fisico_v1.sql` | Apaga e cria o schema `projeto_bd2` com as 17 tabelas, domínios, enums e restrições. |
-| 02 | `sql/02_testes_restricoes_v1.sql` | Prova que as restrições funcionam: 27 testes que têm que ser barrados (CHECK, UNIQUE, NOT NULL, FK simples e composta, EXCLUDE, domínio, enum e coluna gerada) e 3 conferências de valor. Na aba Messages: 27 "OK barrado", 3 "OK conferido" e nenhum "FALHOU". Roda dentro de `BEGIN ... ROLLBACK`, então não deixa nada no banco, e dá o mesmo resultado antes ou depois da carga. |
+| 02 | `sql/02_testes_restricoes_v1.sql` | Prova que as restrições funcionam: 75 testes que têm que ser barrados (CHECK, UNIQUE, NOT NULL, PK, FK simples e composta, EXCLUDE, domínio, enum e coluna gerada), cada um conferindo pelo nome que quem barrou foi a restrição certa, e 4 conferências. A última (bloco 8) lê no catálogo todas as restrições CHECK, UNIQUE, FK e EXCLUDE do schema (inclusive as dos domínios) e dá FALHOU se alguma ficou sem teste. Na aba Messages: 75 "OK barrado", 4 "OK conferido" e nenhum "FALHOU". Roda dentro de `BEGIN ... ROLLBACK`, então não deixa nada no banco, e dá o mesmo resultado antes ou depois da carga. |
 | 03 | `sql/03_carga_v1.sql` | Popula o banco com dados de teste (ver "Carga de dados" abaixo). |
 | 04 | `sql/04_indices_v1.sql` | Cria 4 índices (um parcial) e mede o ganho de cada um com `EXPLAIN (ANALYZE, BUFFERS)` (ver "Índices" abaixo). |
 | 05a | `sql/05a_concorrencia_preparacao_v1.sql` | Confere o banco e guarda a turma e os alunos da demonstração da "última vaga". Roda nas DUAS abas. Sem ele os scripts 05b, 05c e 05d dão erro. |
@@ -39,7 +40,7 @@ Rodar na ordem do número do arquivo, todos no banco `matricula`:
 | 07 | `sql/07_administracao_views_v1.sql` | Cria as views `vw_oferta`, `vw_vagas` e `vw_historico` e a materialized view `mv_indicadores`, e mede o ganho da materialized view com EXPLAIN. |
 | 08 | `sql/08_administracao_auditoria_v1.sql` | Gatilho que grava em `tb_log_matricula` o antes e o depois (JSONB) de toda mudança de matrícula e de nota, a trava que recusa INSERT direto no log, e o índice GIN no JSONB (bônus) com EXPLAIN antes e depois. |
 | 09 | `sql/09_administracao_seguranca_v1.sql` | Papéis aluno, secretaria e coordenacao, REVOKE de tudo, GRANT só do necessário e RLS (o aluno só vê o próprio histórico). **Roda depois de todos os que criam objeto**: fecha as permissões de tudo que já existe. |
-| 10 | `sql/10_administracao_seguranca_testes_v1.sql` | 29 testes de segurança (o que pode funciona, o que não pode é barrado, e a lista exata de permissões, papéis e policies). `BEGIN ... ROLLBACK`, não deixa nada no banco. |
+| 10 | `sql/10_administracao_seguranca_testes_v1.sql` | 29 testes de segurança (o que pode funciona, o que não pode é barrado, e a lista exata de permissões, papéis e policies). `BEGIN ... ROLLBACK`, não deixa nada no banco. A última linha da aba Messages dá o veredito: "RESULTADO: todos os testes deram OK"; se algum teste falhar, o script termina com ERRO e diz quantos falharam. |
 | 11 | `sql/11_administracao_backup_conferencia_v1.sql` | Impressão digital do banco (linhas e md5 de cada tabela e da estrutura) para provar que a restauração do backup ficou igual. Só lê. |
 
 A demonstração de concorrência (05a a 05e) também funciona depois do 11, com o banco completo: foi testada assim, e as matrículas do teste aparecem no log de auditoria do 08.
@@ -88,10 +89,12 @@ Clica no banco matricula, abre o Tools > Query Tool, abre o arquivo pela pastinh
 Tudo do projeto fica no schema projeto_bd2 pra não misturar com o schema academico que já vem no banco do professor.
 
 - O `01_modelo_fisico_v1.sql` apaga e cria o schema de novo, então dá pra rodar várias vezes sem problema. **Mas isso apaga tudo que estava no schema:** dados, índices, views, gatilhos, permissões e policies. Depois dele, roda de novo todos os outros na ordem da tabela (do 03 ao 11; o 02 é opcional).
-- O `03_carga_v1.sql` e o `04_indices_v1.sql` também podem ser rodados várias vezes (o primeiro zera as tabelas antes de popular, o segundo apaga os índices antes de criar).
+- O `03_carga_v1.sql` e o `04_indices_v1.sql` também podem ser rodados várias vezes (o primeiro zera as tabelas antes de popular, o segundo apaga os índices antes de criar). Só que depois do `08_administracao_auditoria_v1.sql` os gatilhos de auditoria já existem: rodar o 03 de novo faz eles registrarem cada linha da carga, e o log fica com 49.928 linhas (medido), não as 25.351 das evidências. Para voltar ao estado das evidências, roda de novo do 01 ao 11.
 - O `03_carga_v1.sql` tem que rodar antes do `04_indices_v1.sql`.
 - Os scripts de concorrência são diferentes: não é F5 no arquivo todo, é passo a passo em duas abas (ver "Transações e concorrência" abaixo).
 - Os scripts de administração (07 a 11) também podem rodar várias vezes. Se rodar o `07_administracao_views_v1.sql` de novo, roda o `09_administracao_seguranca_v1.sql` depois: a materialized view é recriada e perde as permissões.
+- No F5 do `07` e do `08` a aba Messages mostra "WARNING: there is no transaction in progress". É esperado: o `COMMIT` antes do bloco de teste fecha a transação que o pgAdmin abre para o arquivo inteiro (está explicado nos dois scripts).
+- Versão: testado no PostgreSQL 16 (imagem `postgres:16` do ambiente da disciplina) e no 17 (o enunciado cita o 17). Todos os scripts rodam com F5 nas duas versões, sem erro (`evidencias/rodada_f5_v1.txt`).
 - Os papéis (aluno, secretaria, coordenacao) são do servidor, não do schema: continuam existindo depois do `01_modelo_fisico_v1.sql`. As permissões e as policies somem junto com as tabelas e voltam rodando o `09_administracao_seguranca_v1.sql`.
 
 Antes de fazer consulta tem que colocar:
@@ -147,10 +150,10 @@ Banco criado do zero (01 a 04), PostgreSQL 16. Cada consulta roda duas vezes e s
 
 | # | Plano antes | Plano depois | Tempo | Páginas lidas |
 |---|---|---|---|---|
-| 1 | Index Scan no índice único (id_aluno, id_turma): como id_turma é a 2ª coluna, ele percorre o índice inteiro | Bitmap Index Scan no `ix_matricula_turma_ativa`, direto nas 34 matrículas ativas da turma | 0,167 ms → 0,036 ms (4,6 vezes) | 102 → 31 |
-| 2 | Seq Scan no histórico inteiro (24.577 linhas, 19.174 aprovadas) e ordenação | Index Scan no `ix_historico_situacao_media`, para na 10ª linha | 3,099 ms → 0,013 ms (238,4 vezes) | 197 → 12 |
-| 3 | Seq Scan nas 24.964 matrículas e ordenação | Index Scan Backward no `ix_matricula_dt`, para na 20ª linha | 2,376 ms → 0,013 ms (182,8 vezes) | 184 → 22 |
-| 4 | Seq Scan nos 2000 alunos (com o índice comum de controle também) | Index Scan no `ix_aluno_nm_pattern` | 0,071 ms → 0,011 ms (6,5 vezes) | 31 → 3 |
+| 1 | Index Scan no índice único (id_aluno, id_turma): como id_turma é a 2ª coluna, ele percorre o índice inteiro | Bitmap Index Scan no `ix_matricula_turma_ativa`, direto nas 34 matrículas ativas da turma | 0,154 ms → 0,027 ms (5,7 vezes) | 102 → 31 |
+| 2 | Seq Scan no histórico inteiro (24.577 linhas, 19.174 aprovadas) e ordenação | Index Scan no `ix_historico_situacao_media`, para na 10ª linha | 2,370 ms → 0,012 ms (197,5 vezes) | 197 → 12 |
+| 3 | Seq Scan nas 24.964 matrículas e ordenação | Index Scan Backward no `ix_matricula_dt`, para na 20ª linha | 2,194 ms → 0,012 ms (182,8 vezes) | 184 → 22 |
+| 4 | Seq Scan nos 2000 alunos (com o índice comum de controle também) | Index Scan no `ix_aluno_nm_pattern` | 0,070 ms → 0,010 ms (7,0 vezes) | 31 → 3 |
 
 O índice parcial (só matrículas ativas) ocupa 56 kB. O mesmo índice com todas as matrículas ocuparia 208 kB.
 
@@ -168,7 +171,7 @@ O tempo muda de um computador pro outro. As páginas lidas e o tipo de plano (Se
 
 O problema: dois alunos tentam pegar a última vaga da turma CCO072 2026/2 A ao mesmo tempo. No READ COMMITTED (o padrão do PostgreSQL) os dois contam as vagas antes de algum dar COMMIT, os dois veem 1 livre e os dois se matriculam. A turma estoura.
 
-Alunos da demonstração: 26000001 (ABA 1) e 26000002 (ABA 2). São do 1º semestre e não estão na turma; eles só entram nela durante o teste e a limpeza apaga depois.
+Alunos da demonstração: 26000001 (ABA 1, do 1º semestre) e 26000002 (ABA 2, do 2º semestre). Nenhum dos dois está na turma; eles só entram nela durante o teste e a limpeza apaga depois.
 
 ### Como rodar
 
@@ -224,7 +227,7 @@ Qual usar na matrícula: o FOR UPDATE. A disputa é sempre pela mesma linha (a t
 | `vw_historico` | histórico do aluno com notas, frequência e situação | `security_invoker`: o RLS vale dentro da view, cada aluno vê só o dele |
 | `mv_indicadores` | aprovação, reprovação, média e frequência por curso e semestre | materialized view: o resultado fica gravado |
 
-Política de atualização da `mv_indicadores`: `REFRESH MATERIALIZED VIEW CONCURRENTLY` depois de cada lançamento de notas e uma vez por noite, sempre pela função `fn_atualizar_indicadores()` (a coordenação executa sem ser dona da view). O agendamento da noite fica fora do banco: a imagem `postgres:16` do ambiente não traz o `pg_cron` (conferido em `pg_available_extensions`), então em produção seria um job do servidor rodando `SELECT projeto_bd2.fn_atualizar_indicadores();`. No projeto o refresh é chamado à mão (bloco 5 do 07). O `CONCURRENTLY` não trava a leitura durante o refresh e precisa do índice único `uq_mv_indicadores`. Não tem refresh por gatilho: nota muda o tempo todo durante o semestre e indicador de gestão não precisa ser do segundo. A coluna `dt_atualizacao` mostra de quando são os números. Ganho medido: 20,8 ms e 426 páginas calculando na hora, 0,011 ms e 1 página lendo da materialized view.
+Política de atualização da `mv_indicadores`: `REFRESH MATERIALIZED VIEW CONCURRENTLY` depois de cada lançamento de notas e uma vez por noite, sempre pela função `fn_atualizar_indicadores()` (a coordenação executa sem ser dona da view). O agendamento da noite fica fora do banco: a imagem `postgres:16` do ambiente não traz o `pg_cron` (conferido em `pg_available_extensions`), então em produção seria um job do servidor rodando `SELECT projeto_bd2.fn_atualizar_indicadores();`. No projeto o refresh é chamado à mão (bloco 5 do 07). O `CONCURRENTLY` não trava a leitura durante o refresh e precisa do índice único `uq_mv_indicadores`. Não tem refresh por gatilho: nota muda o tempo todo durante o semestre e indicador de gestão não precisa ser do segundo. A coluna `dt_atualizacao` mostra de quando são os números. Ganho medido: 17,0 ms e 426 páginas calculando na hora, 0,008 ms e 1 página lendo da materialized view.
 
 ### Segurança (`09_administracao_seguranca_v1.sql`)
 
@@ -251,7 +254,7 @@ Os 29 testes, os 24 mutantes que provam que eles pegam erro e a saída estão em
 
 Os gatilhos `trg_log_matricula` e `trg_log_historico` gravam cada INSERT, UPDATE e DELETE de `tb_matricula` e de `tb_historico` (as notas) em `tb_log_matricula`, com a tabela, a linha antes e depois em JSONB, o papel que fez (`CURRENT_USER`, em `nm_usuario`) e o usuário que conectou (`session_user`, em `usuario_sessao` dentro do JSON). O gatilho `trg_log_so_pelo_gatilho` recusa INSERT feito direto no log: a secretaria precisa de INSERT no log para o gatilho funcionar, e sem essa trava poderia inventar uma linha.
 
-O índice GIN `ix_log_matricula_detalhe` (`jsonb_path_ops`) atende a busca "toda a movimentação de um aluno" (`ds_detalhe @> '{"depois": {"id_aluno": 12}}'`): de 16,9 ms e 896 páginas (leitura da tabela inteira) para 0,037 ms e 5 páginas.
+O índice GIN `ix_log_matricula_detalhe` (`jsonb_path_ops`) atende a busca "toda a movimentação de um aluno" (`ds_detalhe @> '{"depois": {"id_aluno": 12}}'`): de 16,9 ms e 896 páginas (leitura da tabela inteira) para 0,063 ms e 5 páginas.
 
 Fica fora do log: mudança no cadastro do aluno (`tb_aluno`), porque o log é por matrícula. A secretaria é o único papel que altera `tb_aluno`.
 
@@ -265,28 +268,34 @@ O `08_administracao_auditoria_v1.sql` tem que rodar como superusuário (o `bd2` 
 
 | Arquivo | O que tem | Gerado por |
 |---|---|---|
+| `evidencias/testes_restricoes_v1.txt` | os 75 testes de restrição antes e depois da carga e os 72 mutantes (banco com um defeito só: uma restrição tirada, o NOT NULL da turma tirado ou uma restrição nova sem teste) com o FALHOU que o 02 deu em cada um | `02` |
 | `evidencias/explain_indices_v1.txt` | EXPLAIN (ANALYZE, BUFFERS) de cada consulta antes e depois de cada índice | `04_indices_v1.sql`, aba Messages |
 | `evidencias/resumo_indices_v1.csv` | tempo e páginas lidas antes e depois, e quantas vezes ficou mais rápido | `04_indices_v1.sql`, aba Data Output |
-| `evidencias/concorrencia_duas_abas_v1.txt` | as duas abas passo a passo no erro e nas duas soluções, e as medições X1 a X5 da comparação | `05a` a `05e`, em duas sessões ao mesmo tempo |
+| `evidencias/concorrencia_duas_abas_v1.txt` | as duas abas passo a passo no erro e nas duas soluções, as medições X1 a X5 da comparação e a mesma demonstração de novo com o banco completo (depois do 11) | `05a` a `05e`, em duas sessões ao mesmo tempo |
+| `evidencias/consultas_v1.txt` | o resultado das 10 consultas | `06` |
+| `evidencias/cardinalidade_minima_v1.txt` | quantos "pais" ficam sem filho na carga, a base da tabela de cardinalidade acima | `ferramentas/cardinalidade_minima.sql` |
 | `evidencias/explain_administracao_v1.txt` | ganho da materialized view e do índice GIN | `07` e `08` |
-| `evidencias/testes_seguranca_v1.txt` | os 29 testes de segurança e os 24 mutantes | `10` |
+| `evidencias/testes_seguranca_v1.txt` | os 29 testes de segurança, os 24 mutantes e o comando de cada mutante | `10` |
 | `evidencias/backup_restauracao_v1.txt` | impressão digital igual antes e depois da restauração | `11` e os comandos de `docs/backup_restauracao.md` |
+| `evidencias/rodada_f5_v1.txt` | cada script rodado como o F5 do pgAdmin (o arquivo inteiro de uma vez), no PostgreSQL 16 e no 17, e o que ficou gravado depois de cada um | `ferramentas/f5_emulacao.sh` |
 
 Todos os arquivos de evidência foram gerados na mesma rodada, com o banco criado do zero pelos scripts 01 a 11 na ordem da tabela, no PostgreSQL 16 (imagem `postgres:16`, a mesma do ambiente da disciplina). A data e a versão estão no cabeçalho de cada arquivo. A rodada usou o `psql`, que mostra o mesmo conteúdo das abas Messages e Data Output do pgAdmin.
 
+Para gerar tudo de novo (Docker aberto, Git Bash na pasta do repositório): `bash ferramentas/rodada_completa.sh`. Ele cria um container de teste próprio (`bd2_teste_pg16`, sem porta publicada), não mexe no `bd2_postgres` da aula e reescreve os arquivos de `evidencias/`.
+
 ## Sobre o modelo
 
-Os dois diagramas abrem no app.diagrams.net e seguem o modelo da Aula 04: fundo branco, cabeçalho do IESB, linhas retas e o par (mín,máx) escrito nas duas pontas de cada relacionamento.
+Os dois diagramas abrem no app.diagrams.net e seguem o modelo da Aula 04: fundo branco, cabeçalho do IESB, linhas sem curva (retas no conceitual, em ângulo reto no lógico) e o par (mín,máx) escrito nas duas pontas de cada relacionamento.
 
-- `modelo/modelo_conceitual.drawio`: o modelo conceitual (DER) na notação de Chen. 12 entidades (retângulo), 15 relacionamentos (losango com um verbo) e os atributos (elipse; o identificador sublinhado e os calculados tracejados). MATRÍCULA é a entidade associativa (losango dentro do retângulo) entre ALUNO e TURMA. O rodapé explica como ler a cardinalidade, onde a mínima é 0 e por quê, e como o conceitual vira o lógico: cada entidade vira tabela, o 1:N vira FK no lado N, o 1:1 (matrícula gera histórico) vira FK com UNIQUE e os quatro N:N viram as tabelas associativas tb_matricula, tb_curriculo_disciplina, tb_pre_requisito e tb_turma_horario.
-- `modelo/modelo_logico.drawio`: o modelo lógico com as 17 tabelas (as 12 entidades, as 4 associativas e o log de auditoria), com colunas, tipos, PK, FK, únicos e colunas geradas. Cada linha sai da FK e chega na PK, com o par (mín,máx) nas duas pontas. O rodapé lista os únicos de várias colunas e as regras que não viram linha: as duas FKs compostas, o EXCLUDE de horário, o log sem FK e o feriado nacional (campus nulo).
+- `modelo/modelo_conceitual.drawio`: o modelo conceitual (DER) na notação de Chen. 12 entidades (retângulo), mais a entidade associativa MATRÍCULA (losango dentro do retângulo) entre ALUNO e TURMA, 15 relacionamentos (losango com um verbo) e os atributos (elipse; o identificador sublinhado e os calculados tracejados). O rodapé explica como ler a cardinalidade, onde a mínima é 0 e por quê, e como o conceitual vira o lógico: cada entidade vira tabela, o 1:N vira FK no lado N, o 1:1 (matrícula gera histórico) vira FK com UNIQUE e os quatro N:N viram as tabelas associativas tb_matricula, tb_curriculo_disciplina, tb_pre_requisito e tb_turma_horario.
+- `modelo/modelo_logico.drawio`: o modelo lógico com as 17 tabelas (as 12 entidades, as 4 associativas e o log de auditoria), com colunas, tipos, PK, FK, únicos e colunas geradas. Cada linha liga a tabela da FK à tabela da PK, com o par (mín,máx) nas duas pontas. O rodapé lista os únicos de várias colunas e as regras que não viram linha: as duas FKs compostas, o EXCLUDE de horário, o log sem FK e o feriado nacional (campus nulo).
 
 ### Como ler a cardinalidade
 
 O par fica junto da entidade (ou tabela) que começa a frase, como na Aula 04. Exemplo: `CAMPUS (1,N) ---- possui ---- (1,1) SALA` se lê "um campus possui de 1 a N salas" e "uma sala fica em exatamente 1 campus". Os comentários das FKs no `01_modelo_fisico_v1.sql` usam o mesmo padrão.
 
-- Do lado da FK, a mínima vira restrição: (1,1) = FK `NOT NULL`; (0,1) = FK que aceita nulo (só em tb_feriado, onde nulo é feriado nacional). O `02_testes_restricoes_v1.sql` prova: matrícula sem turma é barrada pelo NOT NULL (bloco 7f) e o segundo histórico da mesma matrícula é barrado pelo UNIQUE (bloco 7i).
-- Do lado da PK, a mínima é regra do negócio: o DDL não obriga um pai a ter filho (como no exemplo da aula, ALUNO (1,N) cursa TURMA). Por isso a mínima 0 só aparece onde a carga tem um caso real de pai sem filho. Em todos os outros pares a mínima é 1, e a contagem de pai sem filho no banco criado do zero deu 0.
+- Do lado da FK, a mínima vira restrição: (1,1) = FK `NOT NULL`; (0,1) = FK que aceita nulo (só em tb_feriado, onde nulo é feriado nacional). O `02_testes_restricoes_v1.sql` prova: matrícula sem turma é barrada pelo NOT NULL (bloco 7f), o segundo histórico da mesma matrícula é barrado pelo UNIQUE (bloco 7i) e cada FK do modelo tem um teste com o pai inexistente.
+- Do lado da PK, a mínima é regra do negócio: o DDL não obriga um pai a ter filho (como no exemplo da aula, ALUNO (1,N) cursa TURMA). Por isso a mínima 0 só aparece onde a carga tem um caso real de pai sem filho. Em todos os outros pares a mínima é 1, e a contagem de pai sem filho no banco criado do zero deu 0 (as 21 contagens estão em `evidencias/cardinalidade_minima_v1.txt`).
 
 | Relacionamento | Onde a mínima é 0 | Caso real na carga |
 |---|---|---|
@@ -332,7 +341,9 @@ Algumas restrições que vale comentar:
 
 ## Como a gente organizou o Git
 
-Combinamos assim:
+Como ficou de verdade (dá para conferir com `git log` e `git shortlog -sn`): o Iury e o Eduardo trabalharam nas branches `iury/modelagem_fisica` e `eduardo/transações_e_concorência` e também subiram alguns commits direto na main (os modelos do Iury e a concorrência do Eduardo). Os commits das branches entraram na main com merge, sem squash, então cada commit aparece com o autor. O Arthur trabalhou nas branches `arthur/...`, juntou as frentes na main e fez as revisões finais. Os Pull Requests foram abertos e aceitos pelo Arthur, sem revisão registrada no GitHub; a revisão das outras frentes foi feita rodando os scripts do zero (ver `AUTORES.md`).
+
+O que tínhamos combinado:
 
 - não dar commit direto na main, ela só recebe o que está funcionando
 - cada um tem sua branch com o nome e a parte que tá fazendo, ex: nome1/modelagem-fisica

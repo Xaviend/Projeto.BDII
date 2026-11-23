@@ -10,7 +10,8 @@ Como usar:
   - se der erro, ler a mensagem na aba Mensagens (banco errado, schema não criado ou turma não encontrada);
   - o bloco 2 (conferência) pode ser rodado de novo a qualquer momento para ver as vagas livres.
 
-Alunos da demonstração: 26000001 (ABA 1) e 26000002 (ABA 2). São do 1º semestre, não estão nessa turma.
+Alunos da demonstração: 26000001 (ABA 1, do 1º semestre) e 26000002 (ABA 2, do 2º semestre). Nenhum dos dois
+está nessa turma.
 */
 ------------------------------------------------------------------------------------------------------------------------
 SET search_path TO projeto_bd2, public;

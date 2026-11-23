@@ -349,7 +349,9 @@ CREATE TABLE tb_historico (
     qt_nota_p3      dm_nota,
     pc_frequencia   dm_percentual,
     ds_situacao     tp_situacao    NOT NULL DEFAULT 'cursando',
-    -- Média IESB: 0,4 x A1 + 0,6 x A2. A P3 substitui a nota que for pior para o aluno.
+    -- Média IESB: 0,4 x A1 + 0,6 x A2. A P3 entra no lugar da A1 ou da A2, no que der a MAIOR média (a menos
+    -- favorável sai). Não é sempre a menor nota, porque a A2 pesa mais: A1=5, A2=6, P3=10 dá 8,00 trocando a A2
+    -- (0,4x5 + 0,6x10) e só 7,60 trocando a A1 (0,4x10 + 0,6x6).
     -- GREATEST pega o maior valor e IGNORA os NULL: sem P3, sobra só a média normal.
     -- Se o aluno faltou a uma prova (nota NULL), a P3 entra no lugar dela. Com só UMA nota lançada, a média fica
     -- NULL de propósito: ainda não existe média. E a situação 'aprovado' exige média (ver ck_historico_aprovado).

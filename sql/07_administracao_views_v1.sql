@@ -244,7 +244,8 @@ SELECT ds_periodo, qt_alunos, qt_historicos, qt_aprovados, qt_reprovados_nota, q
 -- Simula o lançamento da A2 de um aluno de CCO em 2026/2: ele passa de 'cursando' para 'aprovado'.
 -- COMMIT antes do BEGIN: o F5 manda o arquivo inteiro de uma vez, e aí o PostgreSQL trata tudo como UMA transação.
 -- Sem este COMMIT, o ROLLBACK do fim do bloco desfaria também as views e a materialized view criadas acima.
--- Rodando passo a passo, o COMMIT só avisa "there is no transaction in progress" (WARNING inofensivo).
+-- Na aba Messages aparece "WARNING: there is no transaction in progress" (com F5 e passo a passo): é esperado e
+-- inofensivo. Com F5 o PostgreSQL avisa porque o COMMIT fecha a transação que ele mesmo abriu para o arquivo.
 
 COMMIT;
 BEGIN;

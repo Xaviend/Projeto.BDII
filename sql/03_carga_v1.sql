@@ -213,7 +213,8 @@ INSERT INTO tb_periodo_letivo (aa_periodo, cd_semestre, dt_inicio, dt_fim) VALUE
     (2025, 1, '2025-02-03', '2025-06-27'), (2025, 2, '2025-08-04', '2025-12-12'),
     (2026, 1, '2026-02-02', '2026-06-26'), (2026, 2, '2026-08-03', '2026-12-11');
 
--- 10 salas "de aula" no campus Asa Sul (as turmas usam só estas), 1 auditório e 1 sala em Goiânia
+-- 10 salas "de aula" no campus Asa Sul, 1 auditório e 1 sala em Goiânia. As turmas usam 8 das 10 de aula:
+-- A101, A102, o auditório e a de Goiânia ficam sem horário (a mínima 0 de SALA no modelo)
 INSERT INTO tb_sala (id_campus, cd_sala, qt_capacidade, ds_tipo)
 SELECT c.id_campus, v.cd_sala, v.qt_capacidade, v.ds_tipo::tp_tipo_sala
   FROM (VALUES ('Asa Sul', 'A101', 50, 'teorica'),     ('Asa Sul', 'A102', 50, 'teorica'),

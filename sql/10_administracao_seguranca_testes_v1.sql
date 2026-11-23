@@ -11,7 +11,8 @@ Como rodar:
   - rodar DEPOIS do 09_administracao_seguranca_v1.sql;
   - tudo fica entre BEGIN e ROLLBACK: nenhum dado é alterado de verdade;
   - Roda inteiro com F5. Resultado na aba Messages: cada teste imprime "OK ..." ou "FALHOU ...".
-    Esperado: 29 OK e nenhum FALHOU.
+    Esperado: 29 OK, nenhum FALHOU e, no fim, "RESULTADO: todos os testes deram OK". Se algum teste falhar, o script
+    termina com ERRO "RESULTADO: n teste(s) com FALHOU".
 
 Por que SET ROLE: o bd2 é superusuário e superusuário ignora RLS e GRANT. Consultar como bd2 não prova nada.
 SET ROLE troca o papel; RESET ROLE volta para o bd2. Dentro dos blocos DO dos testes, SET LOCAL ROLE troca o papel
@@ -77,6 +78,9 @@ RESET ROLE;
 -- Teste negativo: o bloco tenta a ação proibida. Se passar, imprime FALHOU. Se o banco recusar com
 -- insufficient_privilege (erro 42501, "permission denied"), imprime OK barrado.
 -- Teste positivo que pode dar erro fica num bloco só dele: se der erro, imprime FALHOU (e não "OK barrado").
+-- Cada FALHOU também soma 1 no contador projeto_bd2.falhas. O bloco RESULTADO, no fim, lê o contador: com
+-- qualquer FALHOU o script termina com ERRO, e não com "Query returned successfully".
+SELECT set_config('projeto_bd2.falhas', '0', true) AS zera_contador_de_falhas;
 
 -- ALUNO -----------------------------------------------------------------------------------------------------------------
 DO $$
@@ -96,6 +100,7 @@ BEGIN
     IF v_total_aluno = v_total_bd2 AND v_total_aluno > 0 AND v_alunos = 1 THEN
         RAISE NOTICE 'OK (teste 1): aluno_26000012 ve o proprio historico inteiro (% linhas, 1 aluno)', v_total_aluno;
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 1): aluno viu % linhas de % alunos, esperado % linhas de 1 aluno',
                      v_total_aluno, v_alunos, v_total_bd2;
     END IF;
@@ -114,6 +119,7 @@ BEGIN
         RAISE NOTICE 'OK barrado (teste 2): historico do 26000001 existe (% linhas) e o aluno_26000012 ve 0 historicos e 0 matriculas dele',
                      v_total_bd2;
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 2): bd2 ve %, aluno_26000012 ve % historicos e % matriculas do colega',
                      v_total_bd2, v_outro, v_outro_matr;
     END IF;
@@ -125,6 +131,7 @@ BEGIN
     IF v_alunos = 1 THEN
         RAISE NOTICE 'OK barrado (teste 3): aluno_26000012 le tb_aluno direto e ve so 1 aluno (ele)';
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 3): aluno_26000012 viu % alunos em tb_aluno', v_alunos;
     END IF;
 
@@ -135,6 +142,7 @@ BEGIN
     IF v_total_aluno > 0 AND v_alunos = 1 THEN
         RAISE NOTICE 'OK (teste 4): aluno_26000001 ve o proprio historico (% linhas, 1 aluno)', v_total_aluno;
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 4): aluno_26000001 viu % linhas de % alunos', v_total_aluno, v_alunos;
     END IF;
 
@@ -148,6 +156,7 @@ BEGIN
     IF v_total_aluno = v_total_bd2 AND v_total_bd2 > 1 THEN
         RAISE NOTICE 'OK (teste 5): aluno ve % vagas ocupadas na CCO072 2026/2 A, mesmo numero que o bd2', v_total_aluno;
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 5): aluno ve % ocupadas, bd2 conta %', v_total_aluno, v_total_bd2;
     END IF;
 END $$;
@@ -163,24 +172,28 @@ BEGIN
     -- bater numa restrição CHECK do histórico e parar o script com outro erro.
     BEGIN
         UPDATE tb_historico SET qt_nota_a1 = qt_nota_a1 WHERE id_matricula IN (SELECT id_matricula FROM tb_matricula);
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 6): aluno alterou a propria nota';
     EXCEPTION WHEN insufficient_privilege THEN
         RAISE NOTICE 'OK barrado (teste 6): aluno nao altera a propria nota: %', SQLERRM;
     END;
     BEGIN
         PERFORM count(*) FROM tb_log_matricula;
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 7): aluno leu o log de matriculas';
     EXCEPTION WHEN insufficient_privilege THEN
         RAISE NOTICE 'OK barrado (teste 7): aluno nao le o log: %', SQLERRM;
     END;
     BEGIN
         PERFORM count(*) FROM mv_indicadores;
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 8): aluno leu os indicadores da coordenacao';
     EXCEPTION WHEN insufficient_privilege THEN
         RAISE NOTICE 'OK barrado (teste 8): aluno nao le mv_indicadores: %', SQLERRM;
     END;
     BEGIN
         PERFORM fn_atualizar_indicadores();       -- o positivo é o teste 21 (coordenacao)
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 9): aluno disparou a atualizacao dos indicadores';
     EXCEPTION WHEN insufficient_privilege THEN
         RAISE NOTICE 'OK barrado (teste 9): aluno nao atualiza os indicadores: %', SQLERRM;
@@ -190,9 +203,11 @@ BEGIN
         IF FOUND THEN
             RAISE NOTICE 'OK (teste 10): aluno le nome e titulacao do professor';
         ELSE
+            PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
             RAISE NOTICE 'FALHOU (teste 10): aluno nao achou nenhum professor';
         END IF;
     EXCEPTION WHEN insufficient_privilege THEN
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 10): aluno nao conseguiu ler o nome do professor: %', SQLERRM;
     END;
     -- negativo: cada coluna protegida do professor, uma por uma
@@ -207,11 +222,13 @@ BEGIN
     IF cardinality(v_lidas) = 0 THEN
         RAISE NOTICE 'OK barrado (teste 11): aluno nao le e-mail nem matricula do professor';
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 11): aluno leu % do professor', v_lidas;
     END IF;
     BEGIN
         INSERT INTO tb_matricula (id_aluno, id_turma)
         VALUES ((SELECT min(id_aluno) FROM tb_aluno), current_setting('projeto_bd2.turma_teste')::int);
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 12): aluno incluiu matricula direto na tabela';
     EXCEPTION WHEN insufficient_privilege THEN
         RAISE NOTICE 'OK barrado (teste 12): aluno nao inclui matricula: %', SQLERRM;
@@ -251,6 +268,7 @@ BEGIN
         RAISE NOTICE 'OK (teste 13): secretaria trancou a matricula % e o log gravou: papel %, conexao %, % -> %',
                      v_id_matricula, v_usuario, v_sessao, v_antes, v_depois;
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 13): log gravou papel %, conexao %, tabela %, % -> %',
                      v_usuario, v_sessao, v_tabela, v_antes, v_depois;
     END IF;
@@ -261,6 +279,7 @@ BEGIN
     IF v_novas = 1 THEN
         RAISE NOTICE 'OK (teste 14): secretaria matriculou o 26000001 na CCO072 2026/2 A';
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 14): INSERT gravou % linhas', v_novas;
     END IF;
 
@@ -274,6 +293,7 @@ BEGIN
         RAISE NOTICE 'OK (teste 15): secretaria lancou a nota A2 do historico % e o log gravou: vazia -> %',
                      v_id_historico, v_depois;
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 15): log das notas gravou tabela %, % -> %', v_tabela, v_antes, v_depois;
     END IF;
 
@@ -285,12 +305,14 @@ BEGIN
     SET LOCAL ROLE secretaria;
     BEGIN
         DELETE FROM tb_matricula WHERE id_matricula = (SELECT min(id_matricula) FROM tb_matricula);
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 16): secretaria apagou uma matricula';
     EXCEPTION WHEN insufficient_privilege THEN
         RAISE NOTICE 'OK barrado (teste 16): secretaria nao apaga matricula (so tranca ou cancela): %', SQLERRM;
     END;
     BEGIN
         UPDATE tb_matricula SET id_turma = id_turma WHERE id_matricula = (SELECT min(id_matricula) FROM tb_matricula);
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 17): secretaria trocou a turma de uma matricula';
     EXCEPTION WHEN insufficient_privilege THEN
         RAISE NOTICE 'OK barrado (teste 17): secretaria so altera o status da matricula: %', SQLERRM;
@@ -298,12 +320,14 @@ BEGIN
     BEGIN
         INSERT INTO tb_log_matricula (id_matricula, ds_acao, ds_detalhe, nm_usuario)
         VALUES (1, 'UPDATE', '{}', 'coordenacao');
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 18): secretaria gravou log em nome de outro usuario';
     EXCEPTION WHEN insufficient_privilege THEN
         -- quem tem que barrar aqui é a permissão por coluna (nm_usuario fora do GRANT), não a trava do teste 19
         IF SQLERRM LIKE 'permission denied for table tb_log_matricula%' THEN
             RAISE NOTICE 'OK barrado (teste 18): ninguem grava log em nome de outro: %', SQLERRM;
         ELSE
+            PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
             RAISE NOTICE 'FALHOU (teste 18): barrado so pela trava do gatilho, a permissao por coluna deixou: %', SQLERRM;
         END IF;
     END;
@@ -312,16 +336,19 @@ BEGIN
     BEGIN
         INSERT INTO tb_log_matricula (id_matricula, ds_acao, ds_detalhe)
         VALUES (1, 'UPDATE', '{"antes": {"ds_status": "cancelada"}, "depois": {"ds_status": "ativa"}}');
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 19): secretaria inventou uma linha de log com INSERT direto';
     EXCEPTION WHEN insufficient_privilege THEN
         IF SQLERRM LIKE '%so recebe linha do gatilho%' THEN
             RAISE NOTICE 'OK barrado (teste 19): log nao aceita INSERT direto: %', SQLERRM;
         ELSE
+            PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
             RAISE NOTICE 'FALHOU (teste 19): barrado por outro motivo (o INSERT nessas colunas devia ser permitido): %', SQLERRM;
         END IF;
     END;
     BEGIN
         UPDATE tb_log_matricula SET ds_acao = 'DELETE' WHERE id_log_matricula = 1;
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 20): secretaria editou o log';
     EXCEPTION WHEN insufficient_privilege THEN
         RAISE NOTICE 'OK barrado (teste 20): log nao se edita: %', SQLERRM;
@@ -345,6 +372,7 @@ BEGIN
     IF v_linhas > 0 AND v_quando IS NOT NULL THEN
         RAISE NOTICE 'OK (teste 21): coordenacao le % linhas de indicadores e atualizou em %', v_linhas, v_quando;
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 21): coordenacao leu % linhas, atualizacao %', v_linhas, v_quando;
     END IF;
 
@@ -353,6 +381,7 @@ BEGIN
     IF v_linhas > 1 THEN
         RAISE NOTICE 'OK (teste 22): coordenacao ve o historico de % alunos', v_linhas;
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 22): coordenacao ve o historico de % alunos', v_linhas;
     END IF;
 
@@ -361,9 +390,11 @@ BEGIN
         IF FOUND THEN
             RAISE NOTICE 'OK (teste 23): coordenacao le nome e matricula do aluno';
         ELSE
+            PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
             RAISE NOTICE 'FALHOU (teste 23): coordenacao nao achou nenhum aluno';
         END IF;
     EXCEPTION WHEN insufficient_privilege THEN
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 23): coordenacao nao conseguiu ler o nome do aluno: %', SQLERRM;
     END;
     -- negativo: cada dado pessoal, um por um
@@ -378,10 +409,12 @@ BEGIN
     IF cardinality(v_lidas) = 0 THEN
         RAISE NOTICE 'OK barrado (teste 24): coordenacao nao le CPF, e-mail nem nascimento do aluno';
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 24): coordenacao leu % do aluno', v_lidas;
     END IF;
     BEGIN
         UPDATE tb_historico SET qt_nota_a1 = qt_nota_a1 WHERE id_historico = 1;
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 25): coordenacao alterou nota';
     EXCEPTION WHEN insufficient_privilege THEN
         RAISE NOTICE 'OK barrado (teste 25): coordenacao nao altera nota: %', SQLERRM;
@@ -397,6 +430,7 @@ BEGIN
     SET LOCAL ROLE visitante_teste;
     BEGIN
         PERFORM count(*) FROM projeto_bd2.vw_oferta;
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 26): usuario sem papel leu a oferta';
     EXCEPTION WHEN insufficient_privilege THEN
         RAISE NOTICE 'OK barrado (teste 26): usuario sem papel nao le nada: %', SQLERRM;
@@ -504,6 +538,7 @@ BEGIN
     IF v_diferencas IS NULL THEN
         RAISE NOTICE 'OK (teste 27): permissoes (tabelas, colunas, sequences, funcoes e schema) batem exatamente com a matriz de acesso';
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 27): %', v_diferencas;
     END IF;
 END $$;
@@ -544,6 +579,7 @@ BEGIN
     IF v_diferencas IS NULL THEN
         RAISE NOTICE 'OK (teste 28): papeis sem LOGIN, SUPERUSER e BYPASSRLS, e os alunos de teste so no grupo aluno';
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 28): %', v_diferencas;
     END IF;
 END $$;
@@ -590,8 +626,19 @@ BEGIN
     IF v_diferencas IS NULL THEN
         RAISE NOTICE 'OK (teste 29): RLS ligado e forcado nas 3 tabelas, com exatamente as 9 policies da matriz';
     ELSE
+        PERFORM set_config('projeto_bd2.falhas', (current_setting('projeto_bd2.falhas')::int + 1)::text, true);
         RAISE NOTICE 'FALHOU (teste 29): %', v_diferencas;
     END IF;
+END $$;
+
+-- RESULTADO: o veredito dos 29 testes numa linha só
+DO $$
+BEGIN
+    IF current_setting('projeto_bd2.falhas')::int > 0 THEN
+        RAISE EXCEPTION 'RESULTADO: % teste(s) com FALHOU (procure FALHOU na aba Messages)',
+                        current_setting('projeto_bd2.falhas');
+    END IF;
+    RAISE NOTICE 'RESULTADO: todos os testes deram OK';
 END $$;
 
 ROLLBACK;

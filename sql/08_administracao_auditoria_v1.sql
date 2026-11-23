@@ -84,8 +84,8 @@ CREATE TRIGGER trg_log_so_pelo_gatilho
 
 -- Teste do gatilho (BEGIN ... ROLLBACK: nada fica gravado): tranca uma matrícula ativa e confere o log
 -- COMMIT antes do BEGIN: o F5 manda o arquivo inteiro de uma vez, e aí o PostgreSQL trata tudo como UMA transação.
--- Sem este COMMIT, o ROLLBACK lá embaixo desfaria também os gatilhos criados acima. Rodando passo a passo, o COMMIT
--- só avisa "there is no transaction in progress" (WARNING inofensivo).
+-- Sem este COMMIT, o ROLLBACK lá embaixo desfaria também os gatilhos criados acima. Na aba Messages aparece
+-- "WARNING: there is no transaction in progress" (com F5 e passo a passo): é esperado e inofensivo.
 COMMIT;
 BEGIN;
 UPDATE tb_matricula SET ds_status = 'trancada'
