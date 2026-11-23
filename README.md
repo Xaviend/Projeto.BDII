@@ -28,7 +28,7 @@ Rodar na ordem do número do arquivo, todos no banco `matricula`:
 | Ordem | Arquivo | O que faz |
 |---|---|---|
 | 01 | `sql/01_modelo_fisico_v1.sql` | Apaga e cria o schema `projeto_bd2` com as 17 tabelas, domínios, enums e restrições. |
-| 02 | `sql/02_testes_restricoes_v1.sql` | Prova que as restrições funcionam: 27 testes que têm que ser barrados (CHECK, UNIQUE, NOT NULL, FK simples e composta, EXCLUDE, domínio, enum e coluna gerada) e 3 conferências de valor. Na aba Messages: 27 "OK barrado", 3 "OK conferido" e nenhum "FALHOU". Roda dentro de `BEGIN ... ROLLBACK`, então não deixa nada no banco, e dá o mesmo resultado antes ou depois da carga. |
+| 02 | `sql/02_testes_restricoes_v1.sql` | Prova que as restrições funcionam: 75 testes que têm que ser barrados (CHECK, UNIQUE, NOT NULL, PK, FK simples e composta, EXCLUDE, domínio, enum e coluna gerada), cada um conferindo pelo nome que quem barrou foi a restrição certa, e 4 conferências. A última (bloco 8) lê no catálogo todas as restrições CHECK, UNIQUE, FK e EXCLUDE do schema (inclusive as dos domínios) e dá FALHOU se alguma ficou sem teste. Na aba Messages: 75 "OK barrado", 4 "OK conferido" e nenhum "FALHOU". Roda dentro de `BEGIN ... ROLLBACK`, então não deixa nada no banco, e dá o mesmo resultado antes ou depois da carga. |
 | 03 | `sql/03_carga_v1.sql` | Popula o banco com dados de teste (ver "Carga de dados" abaixo). |
 | 04 | `sql/04_indices_v1.sql` | Cria 4 índices (um parcial) e mede o ganho de cada um com `EXPLAIN (ANALYZE, BUFFERS)` (ver "Índices" abaixo). |
 | 05a | `sql/05a_concorrencia_preparacao_v1.sql` | Confere o banco e guarda a turma e os alunos da demonstração da "última vaga". Roda nas DUAS abas. Sem ele os scripts 05b, 05c e 05d dão erro. |
@@ -150,10 +150,10 @@ Banco criado do zero (01 a 04), PostgreSQL 16. Cada consulta roda duas vezes e s
 
 | # | Plano antes | Plano depois | Tempo | Páginas lidas |
 |---|---|---|---|---|
-| 1 | Index Scan no índice único (id_aluno, id_turma): como id_turma é a 2ª coluna, ele percorre o índice inteiro | Bitmap Index Scan no `ix_matricula_turma_ativa`, direto nas 34 matrículas ativas da turma | 0,146 ms → 0,029 ms (5,0 vezes) | 102 → 31 |
-| 2 | Seq Scan no histórico inteiro (24.577 linhas, 19.174 aprovadas) e ordenação | Index Scan no `ix_historico_situacao_media`, para na 10ª linha | 2,369 ms → 0,012 ms (197,4 vezes) | 197 → 12 |
-| 3 | Seq Scan nas 24.964 matrículas e ordenação | Index Scan Backward no `ix_matricula_dt`, para na 20ª linha | 2,171 ms → 0,012 ms (180,9 vezes) | 184 → 22 |
-| 4 | Seq Scan nos 2000 alunos (com o índice comum de controle também) | Index Scan no `ix_aluno_nm_pattern` | 0,072 ms → 0,010 ms (7,2 vezes) | 31 → 3 |
+| 1 | Index Scan no índice único (id_aluno, id_turma): como id_turma é a 2ª coluna, ele percorre o índice inteiro | Bitmap Index Scan no `ix_matricula_turma_ativa`, direto nas 34 matrículas ativas da turma | 0,154 ms → 0,027 ms (5,7 vezes) | 102 → 31 |
+| 2 | Seq Scan no histórico inteiro (24.577 linhas, 19.174 aprovadas) e ordenação | Index Scan no `ix_historico_situacao_media`, para na 10ª linha | 2,370 ms → 0,012 ms (197,5 vezes) | 197 → 12 |
+| 3 | Seq Scan nas 24.964 matrículas e ordenação | Index Scan Backward no `ix_matricula_dt`, para na 20ª linha | 2,194 ms → 0,012 ms (182,8 vezes) | 184 → 22 |
+| 4 | Seq Scan nos 2000 alunos (com o índice comum de controle também) | Index Scan no `ix_aluno_nm_pattern` | 0,070 ms → 0,010 ms (7,0 vezes) | 31 → 3 |
 
 O índice parcial (só matrículas ativas) ocupa 56 kB. O mesmo índice com todas as matrículas ocuparia 208 kB.
 
@@ -227,7 +227,7 @@ Qual usar na matrícula: o FOR UPDATE. A disputa é sempre pela mesma linha (a t
 | `vw_historico` | histórico do aluno com notas, frequência e situação | `security_invoker`: o RLS vale dentro da view, cada aluno vê só o dele |
 | `mv_indicadores` | aprovação, reprovação, média e frequência por curso e semestre | materialized view: o resultado fica gravado |
 
-Política de atualização da `mv_indicadores`: `REFRESH MATERIALIZED VIEW CONCURRENTLY` depois de cada lançamento de notas e uma vez por noite, sempre pela função `fn_atualizar_indicadores()` (a coordenação executa sem ser dona da view). O agendamento da noite fica fora do banco: a imagem `postgres:16` do ambiente não traz o `pg_cron` (conferido em `pg_available_extensions`), então em produção seria um job do servidor rodando `SELECT projeto_bd2.fn_atualizar_indicadores();`. No projeto o refresh é chamado à mão (bloco 5 do 07). O `CONCURRENTLY` não trava a leitura durante o refresh e precisa do índice único `uq_mv_indicadores`. Não tem refresh por gatilho: nota muda o tempo todo durante o semestre e indicador de gestão não precisa ser do segundo. A coluna `dt_atualizacao` mostra de quando são os números. Ganho medido: 44,1 ms e 426 páginas calculando na hora, 0,013 ms e 1 página lendo da materialized view.
+Política de atualização da `mv_indicadores`: `REFRESH MATERIALIZED VIEW CONCURRENTLY` depois de cada lançamento de notas e uma vez por noite, sempre pela função `fn_atualizar_indicadores()` (a coordenação executa sem ser dona da view). O agendamento da noite fica fora do banco: a imagem `postgres:16` do ambiente não traz o `pg_cron` (conferido em `pg_available_extensions`), então em produção seria um job do servidor rodando `SELECT projeto_bd2.fn_atualizar_indicadores();`. No projeto o refresh é chamado à mão (bloco 5 do 07). O `CONCURRENTLY` não trava a leitura durante o refresh e precisa do índice único `uq_mv_indicadores`. Não tem refresh por gatilho: nota muda o tempo todo durante o semestre e indicador de gestão não precisa ser do segundo. A coluna `dt_atualizacao` mostra de quando são os números. Ganho medido: 17,0 ms e 426 páginas calculando na hora, 0,008 ms e 1 página lendo da materialized view.
 
 ### Segurança (`09_administracao_seguranca_v1.sql`)
 
@@ -254,7 +254,7 @@ Os 29 testes, os 24 mutantes que provam que eles pegam erro e a saída estão em
 
 Os gatilhos `trg_log_matricula` e `trg_log_historico` gravam cada INSERT, UPDATE e DELETE de `tb_matricula` e de `tb_historico` (as notas) em `tb_log_matricula`, com a tabela, a linha antes e depois em JSONB, o papel que fez (`CURRENT_USER`, em `nm_usuario`) e o usuário que conectou (`session_user`, em `usuario_sessao` dentro do JSON). O gatilho `trg_log_so_pelo_gatilho` recusa INSERT feito direto no log: a secretaria precisa de INSERT no log para o gatilho funcionar, e sem essa trava poderia inventar uma linha.
 
-O índice GIN `ix_log_matricula_detalhe` (`jsonb_path_ops`) atende a busca "toda a movimentação de um aluno" (`ds_detalhe @> '{"depois": {"id_aluno": 12}}'`): de 42,0 ms e 896 páginas (leitura da tabela inteira) para 0,057 ms e 5 páginas.
+O índice GIN `ix_log_matricula_detalhe` (`jsonb_path_ops`) atende a busca "toda a movimentação de um aluno" (`ds_detalhe @> '{"depois": {"id_aluno": 12}}'`): de 16,9 ms e 896 páginas (leitura da tabela inteira) para 0,063 ms e 5 páginas.
 
 Fica fora do log: mudança no cadastro do aluno (`tb_aluno`), porque o log é por matrícula. A secretaria é o único papel que altera `tb_aluno`.
 
@@ -268,6 +268,7 @@ O `08_administracao_auditoria_v1.sql` tem que rodar como superusuário (o `bd2` 
 
 | Arquivo | O que tem | Gerado por |
 |---|---|---|
+| `evidencias/testes_restricoes_v1.txt` | os 75 testes de restrição antes e depois da carga e os 72 mutantes (banco com um defeito só: uma restrição tirada, o NOT NULL da turma tirado ou uma restrição nova sem teste) com o FALHOU que o 02 deu em cada um | `02` |
 | `evidencias/explain_indices_v1.txt` | EXPLAIN (ANALYZE, BUFFERS) de cada consulta antes e depois de cada índice | `04_indices_v1.sql`, aba Messages |
 | `evidencias/resumo_indices_v1.csv` | tempo e páginas lidas antes e depois, e quantas vezes ficou mais rápido | `04_indices_v1.sql`, aba Data Output |
 | `evidencias/concorrencia_duas_abas_v1.txt` | as duas abas passo a passo no erro e nas duas soluções, as medições X1 a X5 da comparação e a mesma demonstração de novo com o banco completo (depois do 11) | `05a` a `05e`, em duas sessões ao mesmo tempo |
@@ -293,7 +294,7 @@ Os dois diagramas abrem no app.diagrams.net e seguem o modelo da Aula 04: fundo 
 
 O par fica junto da entidade (ou tabela) que começa a frase, como na Aula 04. Exemplo: `CAMPUS (1,N) ---- possui ---- (1,1) SALA` se lê "um campus possui de 1 a N salas" e "uma sala fica em exatamente 1 campus". Os comentários das FKs no `01_modelo_fisico_v1.sql` usam o mesmo padrão.
 
-- Do lado da FK, a mínima vira restrição: (1,1) = FK `NOT NULL`; (0,1) = FK que aceita nulo (só em tb_feriado, onde nulo é feriado nacional). O `02_testes_restricoes_v1.sql` prova: matrícula sem turma é barrada pelo NOT NULL (bloco 7f) e o segundo histórico da mesma matrícula é barrado pelo UNIQUE (bloco 7i).
+- Do lado da FK, a mínima vira restrição: (1,1) = FK `NOT NULL`; (0,1) = FK que aceita nulo (só em tb_feriado, onde nulo é feriado nacional). O `02_testes_restricoes_v1.sql` prova: matrícula sem turma é barrada pelo NOT NULL (bloco 7f), o segundo histórico da mesma matrícula é barrado pelo UNIQUE (bloco 7i) e cada FK do modelo tem um teste com o pai inexistente.
 - Do lado da PK, a mínima é regra do negócio: o DDL não obriga um pai a ter filho (como no exemplo da aula, ALUNO (1,N) cursa TURMA). Por isso a mínima 0 só aparece onde a carga tem um caso real de pai sem filho. Em todos os outros pares a mínima é 1, e a contagem de pai sem filho no banco criado do zero deu 0 (as 21 contagens estão em `evidencias/cardinalidade_minima_v1.txt`).
 
 | Relacionamento | Onde a mínima é 0 | Caso real na carga |

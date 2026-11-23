@@ -43,7 +43,54 @@ academico() { docker exec $C sh -c "psql -U bd2 -d $1 -X -Atc 'select count(*) f
 
 roda 01_modelo_fisico_v1
 roda 02_testes_restricoes_v1
+
+# ---------- 02: mutantes. Copia do banco so com o 01 (tst02_base); para cada restricao do schema, uma copia nova
+# sem ela, e o 02 tem que dar FALHOU. Os dois ultimos: NOT NULL tirado e restricao nova sem teste (bloco 8).
+echo "== mutantes do 02"
+docker exec $C psql -U bd2 -d postgres -q -c "DROP DATABASE IF EXISTS tst02_base WITH (FORCE);" -c "CREATE DATABASE tst02_base TEMPLATE matricula;"
+LISTA=$(docker exec $C psql -U bd2 -d tst02_base -X -At -F '|' -c "SELECT c.conname, CASE WHEN c.contypid <> 0 THEN format('ALTER DOMAIN projeto_bd2.%I DROP CONSTRAINT %I;', t.typname, c.conname) ELSE format('ALTER TABLE projeto_bd2.%I DROP CONSTRAINT %I;', r.relname, c.conname) END FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace LEFT JOIN pg_class r ON r.oid = c.conrelid LEFT JOIN pg_type t ON t.oid = c.contypid WHERE n.nspname = 'projeto_bd2' AND c.contype IN ('c', 'u', 'f', 'x') AND c.conname NOT IN ('uq_curriculo_id_curso', 'uq_turma_id_periodo') ORDER BY c.conname" | tr -d '\r')
+LISTA="$LISTA
+not_null_id_turma|ALTER TABLE projeto_bd2.tb_matricula ALTER COLUMN id_turma DROP NOT NULL;
+restricao_nova_sem_teste|ALTER TABLE projeto_bd2.tb_sala ADD CONSTRAINT ck_sala_nova CHECK (qt_capacidade < 1000);"
+: > "$OUT/mutantes_02.txt"
+VIVOS02=0
+while IFS='|' read -r nome cmd; do
+  [ -z "$nome" ] && continue
+  docker exec $C psql -U bd2 -d postgres -q -c "DROP DATABASE IF EXISTS tst02_m WITH (FORCE);" -c "CREATE DATABASE tst02_m TEMPLATE tst02_base;" </dev/null
+  docker exec $C psql -U bd2 -d tst02_m -q -v ON_ERROR_STOP=1 -c "$cmd" </dev/null >/dev/null
+  saida02=$(docker exec $C sh -c "psql -U bd2 -d tst02_m -X -v ON_ERROR_STOP=1 -f /tmp/final/02_testes_restricoes_v1.sql" </dev/null 2>&1 || true)
+  r=$(printf '%s\n' "$saida02" | grep -oE 'FALHOU.*' | head -1 | cut -c1-170 || true)
+  [ -z "$r" ] && r=$(printf '%s\n' "$saida02" | grep -oE 'ERROR:.*' | head -1 | cut -c1-170 || true)
+  [ -z "$r" ] && { r="NENHUM FALHOU (mutante vivo)"; VIVOS02=$((VIVOS02 + 1)); }
+  echo "$nome => $r" >> "$OUT/mutantes_02.txt"
+done <<< "$LISTA"
+docker exec $C psql -U bd2 -d postgres -q -c "DROP DATABASE IF EXISTS tst02_m WITH (FORCE);" -c "DROP DATABASE IF EXISTS tst02_base WITH (FORCE);"
+echo "mutantes do 02: $(grep -c . "$OUT/mutantes_02.txt") | vivos: $VIVOS02"
+
 roda 03_carga_v1
+docker exec $C sh -c "$P -v ON_ERROR_STOP=1 -f /tmp/final/02_testes_restricoes_v1.sql" > "$OUT/02_depois_da_carga.txt" 2>&1
+{
+echo "EVIDENCIAS - TESTES DE RESTRICAO (sql/02_testes_restricoes_v1.sql)"
+echo "Gerado em $QUANDO, PostgreSQL $VERSAO no Docker (imagem postgres:16), banco criado do zero na ordem do README."
+echo "Esperado: 75 \"OK barrado\", 4 \"OK conferido\" e nenhum FALHOU, antes e depois da carga. Cada \"OK barrado\" ja"
+echo "conferiu que quem barrou foi a restricao esperada (o nome dela esta na mensagem do banco)."
+echo
+echo "########## antes da carga (so o 01) ##########"
+grep -E 'NOTICE:  OK|FALHOU' "$OUT/02_testes_restricoes_v1.txt" | sed -e 's/^psql:[^ ]*: NOTICE:  //' -e 's/^psql:[^ ]*: //'
+echo
+echo "Total: $(grep -c 'OK barrado' "$OUT/02_testes_restricoes_v1.txt") OK barrado | $(grep -c 'OK conferido' "$OUT/02_testes_restricoes_v1.txt") OK conferido | $(grep -c 'FALHOU' "$OUT/02_testes_restricoes_v1.txt" || true) FALHOU"
+echo
+echo "########## depois da carga (01 a 03) ##########"
+echo "Total: $(grep -c 'OK barrado' "$OUT/02_depois_da_carga.txt") OK barrado | $(grep -c 'OK conferido' "$OUT/02_depois_da_carga.txt") OK conferido | $(grep -c 'FALHOU' "$OUT/02_depois_da_carga.txt" || true) FALHOU"
+echo
+echo "########## prova de que os testes pegam erro (mutantes) ##########"
+echo "Cada linha: uma restricao do 01 tirada (numa copia do banco so com o 01) e o primeiro FALHOU que o 02 deu."
+echo "As duas ultimas: o NOT NULL de tb_matricula.id_turma tirado, e uma restricao NOVA sem teste (o bloco 8 tem que"
+echo "acusar). Ficam fora uq_curriculo_id_curso e uq_turma_id_periodo (contem a PK; o bloco 8 explica)."
+cat "$OUT/mutantes_02.txt"
+echo
+echo "Mutantes: $(grep -c . "$OUT/mutantes_02.txt") | vivos (nenhum FALHOU): $VIVOS02"
+} > "$E/testes_restricoes_v1.txt"
 
 # ---------- 04: aba Messages (NOTICE, no stderr) e aba Data Output (resultados, no stdout em CSV) separadas
 docker exec $C sh -c "$P -q -v ON_ERROR_STOP=1 -P format=csv -f /tmp/final/04_indices_v1.sql" > "$OUT/04_dados.csv" 2> "$OUT/04_mensagens.txt"

@@ -1,5 +1,5 @@
 EVIDENCIAS - TESTES DE SEGURANCA (papeis, GRANT/REVOKE e RLS)
-Saida do sql/10_administracao_seguranca_testes_v1.sql, gerada em 23/11/2026 10:41 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1),
+Saida do sql/10_administracao_seguranca_testes_v1.sql, gerada em 23/11/2026 10:59 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1),
 banco criado do zero com os scripts 01 a 11 na ordem do README. Esperado: 29 OK, nenhum FALHOU e
 a linha final "RESULTADO: todos os testes deram OK".
 
@@ -48,7 +48,7 @@ OK barrado (teste 17): secretaria so altera o status da matricula: permission de
 OK barrado (teste 18): ninguem grava log em nome de outro: permission denied for table tb_log_matricula
 OK barrado (teste 19): log nao aceita INSERT direto: tb_log_matricula so recebe linha do gatilho de auditoria (usuario secretaria)
 OK barrado (teste 20): log nao se edita: permission denied for table tb_log_matricula
-OK (teste 21): coordenacao le 20 linhas de indicadores e atualizou em 2026-11-23 13:42:54.932908+00
+OK (teste 21): coordenacao le 20 linhas de indicadores e atualizou em 2026-11-23 14:02:10.139571+00
 OK (teste 22): coordenacao ve o historico de 1988 alunos
 OK (teste 23): coordenacao le nome e matricula do aluno
 OK barrado (teste 24): coordenacao nao le CPF, e-mail nem nascimento do aluno

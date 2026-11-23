@@ -1,0 +1,169 @@
+EVIDENCIAS - TESTES DE RESTRICAO (sql/02_testes_restricoes_v1.sql)
+Gerado em 23/11/2026 10:59 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero na ordem do README.
+Esperado: 75 "OK barrado", 4 "OK conferido" e nenhum FALHOU, antes e depois da carga. Cada "OK barrado" ja
+conferiu que quem barrou foi a restricao esperada (o nome dela esta na mensagem do banco).
+
+########## antes da carga (so o 01) ##########
+OK barrado (bloco 1): value for domain dm_nota violates check constraint "dm_nota_check"
+OK barrado (bloco 1b): value for domain dm_percentual violates check constraint "dm_percentual_check"
+OK barrado (bloco 1c): invalid input value for enum tp_status_matricula: "suspensa"
+OK barrado (bloco 2): duplicate key value violates unique constraint "uq_feriado_dt_campus"
+OK barrado (bloco 2b): new row for relation "tb_cidade" violates check constraint "ck_cidade_nm"
+OK barrado (bloco 2c): new row for relation "tb_cidade" violates check constraint "ck_cidade_sg_uf"
+OK barrado (bloco 2d): duplicate key value violates unique constraint "pk_cidade"
+OK barrado (bloco 2e): duplicate key value violates unique constraint "uq_cidade_nm_uf"
+OK barrado (bloco 2f): new row for relation "tb_campus" violates check constraint "ck_campus_nm"
+OK barrado (bloco 2g): duplicate key value violates unique constraint "uq_campus_nm"
+OK barrado (bloco 2h): insert or update on table "tb_campus" violates foreign key constraint "fk_campus_cidade"
+OK barrado (bloco 2i): insert or update on table "tb_feriado" violates foreign key constraint "fk_feriado_campus"
+OK conferido (bloco 3): qt_ch_total = 80 nas duas disciplinas
+OK barrado (bloco 3): new row for relation "tb_disciplina" violates check constraint "ck_disciplina_ch"
+OK barrado (bloco 3b): new row for relation "tb_disciplina" violates check constraint "ck_disciplina_texto"
+OK barrado (bloco 3c): duplicate key value violates unique constraint "uq_disciplina_cd"
+OK barrado (bloco 3d): new row for relation "tb_curso" violates check constraint "ck_curso_ch"
+OK barrado (bloco 3e): new row for relation "tb_curso" violates check constraint "ck_curso_texto"
+OK barrado (bloco 3f): duplicate key value violates unique constraint "uq_curso_cd"
+OK barrado (bloco 3g): insert or update on table "tb_curso" violates foreign key constraint "fk_curso_campus"
+OK barrado (bloco 3h): new row for relation "tb_curriculo" violates check constraint "ck_curriculo_aa"
+OK barrado (bloco 3i): duplicate key value violates unique constraint "uq_curriculo_curso_aa"
+OK barrado (bloco 3j): insert or update on table "tb_curriculo" violates foreign key constraint "fk_curriculo_curso"
+OK barrado (bloco 4): new row for relation "tb_pre_requisito" violates check constraint "ck_pre_req_si_mesma"
+OK barrado (bloco 4b): duplicate key value violates unique constraint "uq_pre_req_par"
+OK barrado (bloco 4c): insert or update on table "tb_pre_requisito" violates foreign key constraint "fk_pre_req_disc"
+OK barrado (bloco 4d): insert or update on table "tb_pre_requisito" violates foreign key constraint "fk_pre_req_requisito"
+OK barrado (bloco 4e): new row for relation "tb_curriculo_disciplina" violates check constraint "ck_cd_periodo_grade"
+OK barrado (bloco 4f): duplicate key value violates unique constraint "uq_cd_curriculo_disc"
+OK barrado (bloco 4g): insert or update on table "tb_curriculo_disciplina" violates foreign key constraint "fk_cd_curriculo"
+OK barrado (bloco 4h): insert or update on table "tb_curriculo_disciplina" violates foreign key constraint "fk_cd_disciplina"
+OK barrado (bloco 5): new row for relation "tb_periodo_letivo" violates check constraint "ck_periodo_semestre"
+OK barrado (bloco 5b): new row for relation "tb_periodo_letivo" violates check constraint "ck_periodo_ano"
+OK barrado (bloco 5c): new row for relation "tb_periodo_letivo" violates check constraint "ck_periodo_datas"
+OK barrado (bloco 5d): duplicate key value violates unique constraint "uq_periodo_aa_sem"
+OK barrado (bloco 5e): new row for relation "tb_professor" violates check constraint "ck_professor_email"
+OK barrado (bloco 5f): new row for relation "tb_professor" violates check constraint "ck_professor_texto"
+OK barrado (bloco 5g): duplicate key value violates unique constraint "uq_professor_email"
+OK barrado (bloco 5h): duplicate key value violates unique constraint "uq_professor_matricula"
+OK barrado (bloco 5i): new row for relation "tb_sala" violates check constraint "ck_sala_capacidade"
+OK barrado (bloco 5j): new row for relation "tb_sala" violates check constraint "ck_sala_cd"
+OK barrado (bloco 5k): duplicate key value violates unique constraint "uq_sala_campus_cd"
+OK barrado (bloco 5l): insert or update on table "tb_sala" violates foreign key constraint "fk_sala_campus"
+OK conferido (bloco 6): 2 horários na T101, um em cada semestre
+OK barrado (bloco 6): conflicting key value violates exclusion constraint "ex_th_choque_sala"
+OK barrado (bloco 6b): insert or update on table "tb_turma_horario" violates foreign key constraint "fk_th_turma"
+OK barrado (bloco 6c): new row for relation "tb_turma" violates check constraint "ck_turma_vagas"
+OK barrado (bloco 6d): new row for relation "tb_turma" violates check constraint "ck_turma_cd"
+OK barrado (bloco 6e): duplicate key value violates unique constraint "uq_turma_cd"
+OK barrado (bloco 6f): insert or update on table "tb_turma" violates foreign key constraint "fk_turma_disciplina"
+OK barrado (bloco 6g): insert or update on table "tb_turma" violates foreign key constraint "fk_turma_periodo"
+OK barrado (bloco 6h): insert or update on table "tb_turma" violates foreign key constraint "fk_turma_professor"
+OK barrado (bloco 6i): new row for relation "tb_turma_horario" violates check constraint "ck_th_dd_semana"
+OK barrado (bloco 6j): new row for relation "tb_turma_horario" violates check constraint "ck_th_horario"
+OK barrado (bloco 6k): insert or update on table "tb_turma_horario" violates foreign key constraint "fk_th_sala"
+OK barrado (bloco 6l): insert or update on table "tb_turma_horario" violates foreign key constraint "fk_th_periodo"
+OK conferido (bloco 7): qt_media_final = 7,80
+OK barrado (bloco 7): insert or update on table "tb_aluno" violates foreign key constraint "fk_aluno_curriculo"
+OK barrado (bloco 7b): new row for relation "tb_aluno" violates check constraint "ck_aluno_cpf"
+OK barrado (bloco 7c): new row for relation "tb_aluno" violates check constraint "ck_aluno_datas"
+OK barrado (bloco 7d): new row for relation "tb_historico" violates check constraint "ck_historico_aprovado"
+OK barrado (bloco 7e): new row for relation "tb_historico" violates check constraint "ck_historico_aprovado"
+OK barrado (bloco 7f): null value in column "id_turma" of relation "tb_matricula" violates not-null constraint
+OK barrado (bloco 7g): insert or update on table "tb_matricula" violates foreign key constraint "fk_matricula_turma"
+OK barrado (bloco 7h): duplicate key value violates unique constraint "uq_matricula_aluno_turma"
+OK barrado (bloco 7i): duplicate key value violates unique constraint "uq_historico_matricula"
+OK barrado (bloco 7j): new row for relation "tb_historico" violates check constraint "ck_historico_rep_nota"
+OK barrado (bloco 7k): new row for relation "tb_historico" violates check constraint "ck_historico_falta"
+OK barrado (bloco 7l): column "qt_media_final" can only be updated to DEFAULT
+OK barrado (bloco 7m): duplicate key value violates unique constraint "uq_aluno_cpf"
+OK barrado (bloco 7n): new row for relation "tb_aluno" violates check constraint "ck_aluno_email"
+OK barrado (bloco 7o): new row for relation "tb_aluno" violates check constraint "ck_aluno_texto"
+OK barrado (bloco 7p): duplicate key value violates unique constraint "uq_aluno_email"
+OK barrado (bloco 7q): duplicate key value violates unique constraint "uq_aluno_matricula"
+OK barrado (bloco 7r): insert or update on table "tb_aluno" violates foreign key constraint "fk_aluno_curso"
+OK barrado (bloco 7s): insert or update on table "tb_matricula" violates foreign key constraint "fk_matricula_aluno"
+OK barrado (bloco 7t): insert or update on table "tb_historico" violates foreign key constraint "fk_historico_matricula"
+OK barrado (bloco 7u): new row for relation "tb_log_matricula" violates check constraint "ck_log_acao"
+OK conferido (bloco 8): as 70 restricoes CHECK, UNIQUE, FK e EXCLUDE do schema tem teste (fora as 2 que so servem de alvo para FK composta)
+
+Total: 75 OK barrado | 4 OK conferido | 0 FALHOU
+
+########## depois da carga (01 a 03) ##########
+Total: 75 OK barrado | 4 OK conferido | 0 FALHOU
+
+########## prova de que os testes pegam erro (mutantes) ##########
+Cada linha: uma restricao do 01 tirada (numa copia do banco so com o 01) e o primeiro FALHOU que o 02 deu.
+As duas ultimas: o NOT NULL de tb_matricula.id_turma tirado, e uma restricao NOVA sem teste (o bloco 8 tem que
+acusar). Ficam fora uq_curriculo_id_curso e uq_turma_id_periodo (contem a PK; o bloco 8 explica).
+ck_aluno_cpf => FALHOU: aceitou CPF 00000000000
+ck_aluno_datas => FALHOU: aceitou aluno com menos de 14 anos
+ck_aluno_email => FALHOU: aceitou e-mail sem @
+ck_aluno_texto => FALHOU: aceitou aluno sem nome
+ck_campus_nm => FALHOU: aceitou campus sem nome
+ck_cd_periodo_grade => FALHOU: aceitou semestre 13 na grade
+ck_cidade_nm => FALHOU: aceitou cidade sem nome
+ck_cidade_sg_uf => FALHOU: aceitou UF em minúscula
+ck_curriculo_aa => FALHOU: aceitou currículo de 1980
+ck_curso_ch => FALHOU: aceitou curso com carga 0
+ck_curso_texto => FALHOU: aceitou curso sem código
+ck_disciplina_ch => FALHOU: aceitou disciplina com carga 0
+ck_disciplina_texto => FALHOU: aceitou disciplina sem nome
+ck_historico_aprovado => FALHOU: aceitou aprovado com média 0
+ck_historico_falta => FALHOU: aceitou reprovado por falta com 90%
+ck_historico_rep_nota => FALHOU: aceitou reprovado por nota com média 7,80
+ck_log_acao => FALHOU: aceitou ação de log inválida
+ck_periodo_ano => FALHOU: aceitou período com ano errado
+ck_periodo_datas => FALHOU: aceitou período com fim antes do início
+ck_periodo_semestre => FALHOU: aceitou semestre 3
+ck_pre_req_si_mesma => FALHOU: aceitou disciplina como pré-requisito de si mesma
+ck_professor_email => FALHOU: aceitou e-mail de professor sem @
+ck_professor_texto => FALHOU: aceitou professor sem nome
+ck_sala_capacidade => FALHOU: aceitou sala com capacidade 0
+ck_sala_cd => FALHOU: aceitou sala sem código
+ck_th_dd_semana => FALHOU: aceitou dia 8 da semana
+ck_th_horario => FALHOU: aceitou aula com duração zero
+ck_turma_cd => FALHOU: aceitou turma sem código
+ck_turma_vagas => FALHOU: aceitou turma com 0 vagas
+dm_nota_check => FALHOU: dm_nota aceitou 10.5
+dm_percentual_check => FALHOU: dm_percentual aceitou 100.5
+ex_th_choque_sala => FALHOU: aceitou choque de horário na mesma sala
+fk_aluno_curriculo => FALHOU: aceitou currículo de outro curso
+fk_aluno_curso => FALHOU: aceitou aluno em curso inexistente
+fk_campus_cidade => FALHOU: aceitou campus em cidade inexistente
+fk_cd_curriculo => FALHOU: aceitou grade de currículo inexistente
+fk_cd_disciplina => FALHOU: aceitou disciplina inexistente na grade
+fk_curriculo_curso => FALHOU: aceitou currículo de curso inexistente
+fk_curso_campus => FALHOU: aceitou curso em campus inexistente
+fk_feriado_campus => FALHOU: aceitou feriado de campus inexistente
+fk_historico_matricula => FALHOU: aceitou histórico de matrícula inexistente
+fk_matricula_aluno => FALHOU: aceitou matrícula de aluno inexistente
+fk_matricula_turma => FALHOU: aceitou turma inexistente
+fk_pre_req_disc => FALHOU: aceitou pré-requisito de disciplina inexistente
+fk_pre_req_requisito => FALHOU: aceitou requisito inexistente
+fk_sala_campus => FALHOU: aceitou sala em campus inexistente
+fk_th_periodo => FALHOU: aceitou horário em semestre inexistente
+fk_th_sala => FALHOU: aceitou horário em sala inexistente
+fk_th_turma => FALHOU: aceitou horário com semestre diferente do da turma
+fk_turma_disciplina => FALHOU: aceitou turma de disciplina inexistente
+fk_turma_periodo => FALHOU: aceitou turma em semestre inexistente
+fk_turma_professor => FALHOU: aceitou turma com professor inexistente
+uq_aluno_cpf => FALHOU: aceitou CPF repetido
+uq_aluno_email => FALHOU: aceitou e-mail de aluno repetido
+uq_aluno_matricula => FALHOU: aceitou matrícula de aluno repetida
+uq_campus_nm => FALHOU: aceitou campus repetido
+uq_cd_curriculo_disc => FALHOU: aceitou disciplina repetida na grade
+uq_cidade_nm_uf => FALHOU: aceitou cidade repetida na mesma UF
+uq_curriculo_curso_aa => FALHOU: aceitou currículo repetido
+uq_curso_cd => FALHOU: aceitou código de curso repetido
+uq_disciplina_cd => FALHOU: aceitou código de disciplina repetido
+uq_feriado_dt_campus => FALHOU: aceitou 2 feriados nacionais no mesmo dia
+uq_historico_matricula => FALHOU: aceitou dois históricos na mesma matrícula
+uq_matricula_aluno_turma => FALHOU: aceitou matrícula repetida
+uq_periodo_aa_sem => FALHOU: aceitou o mesmo semestre duas vezes
+uq_pre_req_par => FALHOU: aceitou pré-requisito repetido
+uq_professor_email => FALHOU: aceitou e-mail de professor repetido
+uq_professor_matricula => FALHOU: aceitou matrícula de professor repetida
+uq_sala_campus_cd => FALHOU: aceitou sala repetida no campus
+uq_turma_cd => FALHOU: aceitou turma repetida
+not_null_id_turma => FALHOU: aceitou matrícula sem turma
+restricao_nova_sem_teste => FALHOU (bloco 8): restricao do schema sem teste neste script: ck_sala_nova
+
+Mutantes: 72 | vivos (nenhum FALHOU): 0

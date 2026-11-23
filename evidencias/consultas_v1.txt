@@ -1,5 +1,5 @@
 EVIDENCIAS - AS 10 CONSULTAS DO MARCO 1 (sql/06_consultas_v1.sql)
-Gerado em 23/11/2026 10:41 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
+Gerado em 23/11/2026 10:59 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
 com os scripts 01 a 05 na ordem do README. No pgAdmin, cada consulta se roda selecionando o trecho e F5.
 
  current_database 

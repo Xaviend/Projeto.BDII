@@ -13,7 +13,7 @@ Banco de Dados II (CCO072), prof. Rodrigo Gonçalves. Cada um cuidou de uma fren
 - `modelo/modelo_conceitual.drawio`: modelo conceitual (DER, notação de Chen) com as 12 entidades, os 15 relacionamentos e a passagem do conceitual para o lógico no rodapé
 - `modelo/modelo_logico.drawio`: modelo lógico com as 17 tabelas, tipos, chaves e cardinalidades
 - `sql/01_modelo_fisico_v1.sql`: schema `projeto_bd2`, tabelas, domínios, enums, restrições (CHECK, UNIQUE, FK composta, EXCLUDE de horário, colunas geradas)
-- `sql/02_testes_restricoes_v1.sql`: 27 testes que provam que as restrições barram dado errado e 3 conferências de valor
+- `sql/02_testes_restricoes_v1.sql`: testes que provam que as restrições barram dado errado (ampliados na conferência final, ver o fim deste arquivo)
 - `sql/03_carga_v1.sql`: carga sintética e determinística (2000 alunos, 1536 turmas, 24.964 matrículas)
 - `sql/04_indices_v1.sql`: 4 índices (um parcial) com EXPLAIN antes e depois
 - `evidencias/explain_indices_v1.txt` e `evidencias/resumo_indices_v1.csv`
@@ -68,3 +68,9 @@ Arthur rodou o projeto inteiro do zero, conferiu cada número do README contra a
 - a pasta `ferramentas/` guarda os scripts que geram todas as evidências (`rodada_completa.sh`), o F5 do pgAdmin no PostgreSQL 16 e no 17 (`f5_emulacao.sh`), a demonstração das duas abas (`concorrencia_evidencia.py`) e a contagem da cardinalidade mínima (`cardinalidade_minima.sql`), para qualquer um gerar as evidências de novo;
 - três evidências novas: o resultado das 10 consultas, as contagens da cardinalidade mínima e a rodada com F5 nas duas versões;
 - o README corrige o semestre do aluno 26000002 (é do 2º), o aviso sobre rodar o 03 depois do 08, a descrição dos diagramas e a seção do Git, que agora diz como o histórico ficou de verdade.
+
+Na mesma conferência, Arthur ajustou também pontos das frentes do Iury e do Eduardo:
+
+- o `02_testes_restricoes_v1.sql` passou de 27 para 75 testes de barramento: agora toda restrição CHECK, UNIQUE, FK e EXCLUDE do schema tem teste (cada FK com o pai inexistente), além de PK e NOT NULL, cada teste confere pelo nome que quem barrou foi a restrição esperada e não outra, e o bloco 8 lê o catálogo e dá FALHOU se aparecer restrição nova sem teste. Para provar que os testes pegam o defeito, a rodada monta 72 bancos estragados, cada um com um defeito só (uma das 70 restrições tirada, o NOT NULL da turma tirado ou uma restrição nova sem teste), e confere que o 02 dá FALHOU em todos (`evidencias/testes_restricoes_v1.txt`);
+- no `01`, o comentário da P3 explica a regra com um exemplo (a P3 troca a nota que dá a maior média, e não sempre a menor, porque a A2 pesa mais); no `03`, o comentário das salas diz quais ficam sem horário; no `05a`, o semestre dos dois alunos da demonstração;
+- a contraprova do `05c` (mostrar que sem o FOR UPDATE a turma estoura) não virou script novo: a medição X4 da evidência de concorrência já prova isso, e mexer na demonstração do Eduardo arriscava o ensaio.

@@ -1,5 +1,5 @@
 EVIDENCIAS - CARDINALIDADE MINIMA NA CARGA (modelo/ e README, "Como ler a cardinalidade")
-Gerado em 23/11/2026 10:41 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1), banco criado do zero com os scripts 01 a 06.
+Gerado em 23/11/2026 10:59 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1), banco criado do zero com os scripts 01 a 06.
 Consulta: ferramentas/cardinalidade_minima.sql. 0 = todo pai tem filho; mais de 0 = existe pai sem filho na carga.
 
                 caso                | sem_filho | total 

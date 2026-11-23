@@ -1,5 +1,5 @@
 EVIDENCIAS - CADA SCRIPT RODADO COMO O F5 DO PGADMIN, NO POSTGRESQL 16 E NO 17
-Gerado em 23/11/2026 10:41 (horario de Brasilia). O F5 do Query Tool manda o arquivo inteiro numa mensagem so (pgAdmin 4:
+Gerado em 23/11/2026 10:59 (horario de Brasilia). O F5 do Query Tool manda o arquivo inteiro numa mensagem so (pgAdmin 4:
 tools/sqleditor/utils/start_running_query.py chama conn.execute_async(sql) sem parametros, e o psycopg 3 usa
 o protocolo simples, send_query). Aqui cada arquivo vai do mesmo jeito (psql -c com o arquivo inteiro), num
 container novo e vazio para cada versao. 'estado' = o que ficou gravado no banco depois daquele F5.
@@ -11,11 +11,11 @@ imagem: postgres:16, versao: postgres (PostgreSQL) 16.16 (Debian 16.16-1.pgdg13+
 == F5 na ordem do README, banco novo
 01                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=0 matriculas=0 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=0
-02_antes_da_carga                                exit=0 | OK: 30 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+02_antes_da_carga                                exit=0 | OK: 79 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=0 matriculas=0 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=0
 03                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
-02_depois_da_carga                               exit=0 | OK: 30 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+02_depois_da_carga                               exit=0 | OK: 79 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
 04                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=42 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
@@ -31,7 +31,7 @@ imagem: postgres:16, versao: postgres (PostgreSQL) 16.16 (Debian 16.16-1.pgdg13+
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
 11                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
-   impressao digital:  >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | bdd7688afe07644b01e502138288b6ba
+   impressao digital:  >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | cd513632d774092d68b6067fb6abd50c
 == F5 de novo (07 a 11), para provar que roda mais de uma vez
 07_2a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
@@ -58,11 +58,11 @@ imagem: postgres:17, versao: postgres (PostgreSQL) 17.12 (Debian 17.12-1.pgdg13+
 == F5 na ordem do README, banco novo
 01                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=0 matriculas=0 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=0
-02_antes_da_carga                                exit=0 | OK: 30 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+02_antes_da_carga                                exit=0 | OK: 79 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=0 matriculas=0 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=0
 03                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
-02_depois_da_carga                               exit=0 | OK: 30 | FALHOU: 0 | ERROR: 0 | WARNING: 0
+02_depois_da_carga                               exit=0 | OK: 79 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=38 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
 04                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=42 views=0 mv=0 gatilhos=0 policies=0 papeis=0 log=387
@@ -78,7 +78,7 @@ imagem: postgres:17, versao: postgres (PostgreSQL) 17.12 (Debian 17.12-1.pgdg13+
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
 11                                               exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 0
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351
-   impressao digital:  >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80531 | 727580d9f0f12b8beb683147c1996b35
+   impressao digital:  >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80531 | e62a2d6597cc016e527ec1bcb5da2909
 == F5 de novo (07 a 11), para provar que roda mais de uma vez
 07_2a                                            exit=0 | OK: 0 | FALHOU: 0 | ERROR: 0 | WARNING: 1
    estado: tabelas=17 alunos=2000 matriculas=24964 indices=44 views=3 mv=1 gatilhos=3 policies=9 papeis=5 log=25351

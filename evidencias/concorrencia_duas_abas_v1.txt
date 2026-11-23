@@ -1,5 +1,5 @@
 EVIDENCIAS - TRANSACOES E CONCORRENCIA (a ultima vaga da turma CCO072 2026/2 A: 35 vagas, 34 ocupadas)
-Gerado em 23/11/2026 10:41 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
+Gerado em 23/11/2026 10:59 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
 com os scripts 01 a 04 na ordem do README.
 Como foi gerado: duas sessoes psql abertas ao mesmo tempo no banco matricula, no papel das duas abas do Query Tool.
 Cada passo dos scripts 05b, 05c e 05d foi mandado so para a aba que o script indica, com 1,5 s entre um e outro.
@@ -20,8 +20,8 @@ No fim, as medicoes X1 a X5 usadas na comparacao do README (nao fazem parte da d
 [ABA 1]      1529 |       35 |       34 |            1
 [ABA 1] (1 row)
 [ABA 2] SET
-[ABA 2] NOTICE:  00000: ok, turma_alvo = 1529
 [ABA 2] DO
+[ABA 2] NOTICE:  00000: ok, turma_alvo = 1529
 [ABA 2]  id_turma | qt_vagas | ocupadas | vagas_livres 
 [ABA 2] ----------+----------+----------+--------------
 [ABA 2]      1529 |       35 |       34 |            1
@@ -153,8 +153,8 @@ No fim, as medicoes X1 a X5 usadas na comparacao do README (nao fazem parte da d
    (esperando trava: nenhuma)
 
 -- PASSO 4 - ABA 2: encerra a transação que falhou
-[ABA 2] WARNING:  25P01: there is no transaction in progress
 [ABA 2] ROLLBACK
+[ABA 2] WARNING:  25P01: there is no transaction in progress
    (esperando trava: nenhuma)
 
 -- PASSO 5 - ABA 2: RETRY. Refaz tudo do zero com o mesmo INSERT: agora a turma está cheia (INSERT 0 0)
