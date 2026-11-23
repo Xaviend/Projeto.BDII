@@ -15,7 +15,7 @@ Mais detalhes de quem fez o que no AUTORES.md.
 
 ## Pastas
 
-- `modelo/` diagrama feito no draw.io
+- `modelo/` modelo conceitual e modelo lógico, feitos no draw.io
 - `sql/` scripts, numerados na ordem em que têm que rodar
 - `evidencias/` resultado do EXPLAIN antes e depois dos índices (gerado pelo `04_indices_v1.sql`), a saída das duas abas na demonstração de concorrência e as saídas da frente de administração (materialized view, GIN, testes de segurança e backup). Lista completa em "Evidências" no fim deste arquivo
 - `docs/` passo a passo do backup e da restauração
@@ -182,8 +182,6 @@ Se a limpeza der erro dizendo que tem transação aberta, roda `ROLLBACK;` nas o
 
 ### O que tem que acontecer
 
-| Script | ABA 1 | ABA 2 | Resultado final |
-|---|---|---|---|
 A turma começa com 35 vagas e 34 ocupadas (1 livre).
 
 | Script | ABA 1 | ABA 2 | Resultado final |
@@ -276,7 +274,12 @@ Os três arquivos da administração foram gerados em 14/11, antes de os scripts
 
 ## Sobre o modelo
 
-O diagrama tá em modelo/modelo_logico.v4.drawio (abre no app.diagrams.net). Tem as 17 tabelas com os tipos, PK, FK e a cardinalidade (mín,máx) de cada relacionamento. O rodapé lista as regras que não viram linha: as duas FKs compostas, o EXCLUDE de horário e os únicos de mais de uma coluna.
+Os dois diagramas abrem no app.diagrams.net:
+
+- `modelo/modelo_conceitual.drawio`: o modelo conceitual (DER) na notação de Chen, com as 12 entidades, os 15 relacionamentos e os atributos (o identificador sublinhado e os calculados tracejados). A matrícula é a entidade associativa entre aluno e turma. O rodapé explica como o conceitual vira o lógico: cada entidade vira tabela, o 1:N vira FK no lado N, o 1:1 (matrícula gera histórico) vira FK com UNIQUE e os quatro N:N viram as tabelas associativas tb_matricula, tb_curriculo_disciplina, tb_pre_requisito e tb_turma_horario.
+- `modelo/modelo_logico.v4.drawio`: o modelo lógico com as 17 tabelas (as 12 entidades, as 4 associativas e o log de auditoria), os tipos, PK, FK e a cardinalidade (mín,máx) de cada relacionamento. O rodapé lista as regras que não viram linha: as duas FKs compostas, o EXCLUDE de horário, o log sem FK e o feriado nacional (campus nulo).
+
+Nos dois, o par (mín,máx) fica escrito junto da entidade que ele descreve, como na Aula 04: ao lado de tb_campus, (0,N) quer dizer que um campus tem de zero a vários cursos; ao lado de tb_curso, (1,1) quer dizer que um curso fica em exatamente um campus. No lógico o pé de galinha segue o padrão das ferramentas: a ponta de "muitos" fica no lado da FK.
 
 Padrão de nomes:
 
@@ -307,7 +310,7 @@ Algumas restrições que vale comentar:
 
 Combinamos assim:
 
-- Não demos commit na main, ela só recebe o que está funcionando
+- não dar commit direto na main, ela só recebe o que está funcionando
 - cada um tem sua branch com o nome e a parte que tá fazendo, ex: nome1/modelagem-fisica
 - commit pequeno, um pra cada parte que funcionou, nada de subir tudo de uma vez
 - quando uma etapa fica pronta abre um Pull Request pra main e alguém do grupo revisa antes de aceitar
