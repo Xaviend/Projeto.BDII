@@ -10,6 +10,7 @@ Banco de Dados II (CCO072), prof. Rodrigo Gonçalves. Cada um cuidou de uma fren
 
 ## Iury Xavier Bomfim: modelagem física e desempenho
 
+- `modelo/modelo_conceitual.drawio`: modelo conceitual (DER, notação de Chen) com as 12 entidades, os 15 relacionamentos e a passagem do conceitual para o lógico no rodapé
 - `modelo/modelo_logico.v4.drawio`: modelo lógico com as 17 tabelas, tipos, chaves e cardinalidades
 - `sql/01_modelo_fisico_v1.sql`: schema `projeto_bd2`, tabelas, domínios, enums, restrições (CHECK, UNIQUE, FK composta, EXCLUDE de horário, colunas geradas)
 - `sql/02_testes_restricoes_v1.sql`: 14 testes que provam que as restrições barram dado errado
@@ -43,3 +44,5 @@ Arthur conferiu a entrega inteira montando o banco do zero pelo README e fez os 
 - numerou os scripts na ordem de execução e corrigiu os nomes e os números (36 para 35 vagas) nos comentários, no README e aqui;
 - gerou as evidências de índices e de concorrência na rodada do zero e escreveu a comparação entre FOR UPDATE e SERIALIZABLE no README, com as medições X1 a X3;
 - conferiu o diagrama v4 do Iury contra o banco e prendeu de novo na coluna certa as 7 linhas que tinham se soltado, com os únicos de mais de uma coluna no rodapé.
+
+Depois dessa revisão, o Iury subiu o modelo conceitual e a versão final do lógico, com o par (mín,máx) escrito junto da entidade que ele descreve, como na Aula 04. Arthur conferiu de novo as 17 tabelas do lógico contra o banco: colunas, tipos e chaves batem.
