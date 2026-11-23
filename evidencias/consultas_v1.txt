@@ -1,0 +1,408 @@
+EVIDENCIAS - AS 10 CONSULTAS DO MARCO 1 (sql/06_consultas_v1.sql)
+Gerado em 23/11/2026 10:41 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
+com os scripts 01 a 05 na ordem do README. No pgAdmin, cada consulta se roda selecionando o trecho e F5.
+
+ current_database 
+------------------
+ matricula
+(1 row)
+
+SET
+ cd_matricula |         nm_aluno          | dt_ingresso 
+--------------+---------------------------+-------------
+ 26000883     | Ana Araújo Campos         | 2025-06-20
+ 26000034     | Ana Araújo Nascimento     | 2023-12-22
+ 26001326     | Ana Barbosa Cardoso       | 2023-12-22
+ 26000350     | Ana Campos Nascimento     | 2025-12-19
+ 26000101     | Ana Cavalcanti Gomes      | 2024-06-21
+ 26001943     | Ana Cavalcanti Nascimento | 2023-06-23
+ 26000265     | Ana Cavalcanti Oliveira   | 2026-06-19
+ 26000941     | Ana Correia Almeida       | 2024-06-21
+ 26000924     | Ana Costa Lima            | 2024-12-20
+ 26000377     | Ana Duarte Oliveira       | 2023-12-22
+(10 rows)
+
+ cd_disciplina |      nm_disciplina      | dia |   horario   | cd_sala |   nm_professor   
+---------------+-------------------------+-----+-------------+---------+------------------
+ CCO050        | Inteligência Artificial | seg | 19:00-20:40 | LAB1    | Daniel Moreira
+ CCO052        | Desenvolvimento Web     | ter | 14:00-15:40 | A105    | Carla Araújo
+ CCO051        | Compiladores            | qui | 08:00-09:40 | A105    | Natália Santos
+ CCO053        | Sistemas Distribuídos   | sex | 16:00-17:40 | A105    | Samuel Rodrigues
+(4 rows)
+
+   nm_campus    |   cidade    | qt_cursos | qt_alunos_ativos 
+----------------+-------------+-----------+------------------
+ Asa Sul        | Brasília/DF |         3 |             1914
+ Goiânia Centro | Goiânia/GO  |         0 |                0
+(2 rows)
+
+ nivel |                      pre_requisito                      |                    caminho                     
+-------+---------------------------------------------------------+------------------------------------------------
+     1 | CCO021 - Programação Orientada a Objetos                | CCO051 <- CCO021
+     2 |     CCO010 - Algoritmos e Lógica de Programação         | CCO051 <- CCO021 <- CCO010
+     1 | CCO043 - Teoria da Computação                           | CCO051 <- CCO043
+     2 |     CCO031 - Teoria dos Grafos                          | CCO051 <- CCO043 <- CCO031
+     3 |         CCO011 - Matemática Discreta                    | CCO051 <- CCO043 <- CCO031 <- CCO011
+     3 |         CCO020 - Estruturas de Dados                    | CCO051 <- CCO043 <- CCO031 <- CCO020
+     4 |             CCO010 - Algoritmos e Lógica de Programação | CCO051 <- CCO043 <- CCO031 <- CCO020 <- CCO010
+(7 rows)
+
+ semestre_da_grade | cd_disciplina |      nm_disciplina      |   ds_tipo   | qt_pre_requisitos_na_cadeia 
+-------------------+---------------+-------------------------+-------------+-----------------------------
+                 4 | CCO072        | Banco de Dados II       | obrigatoria |                           3
+                 6 | CCO060        | Projeto Integrador I    | obrigatoria |                           3
+                 6 | CCO061        | Segurança da Informação | optativa    |                           4
+(3 rows)
+
+ cd_curso | posicao | cd_matricula |          nm_aluno           | qt_cr | qt_disciplinas | percentil | qt_alunos_curso | qt_mediana_cr_curso 
+----------+---------+--------------+-----------------------------+-------+----------------+-----------+-----------------+---------------------
+ ADS      |       1 | 26001449     | Nicolas Ribeiro Rocha       |  8.47 |              8 | top 0.0%  |              80 |                7.48
+ ADS      |       2 | 26000878     | Larissa Almeida Mendes      |  8.27 |              8 | top 1.3%  |              80 |                7.48
+ ADS      |       3 | 26000578     | Gabriela Martins Correia    |  8.20 |              8 | top 2.5%  |              80 |                7.48
+ ADS      |       4 | 26000328     | Natália Oliveira Cardoso    |  8.14 |              8 | top 3.8%  |              80 |                7.48
+ ADS      |       5 | 26001178     | Pedro Costa Teixeira        |  7.97 |              8 | top 5.1%  |              80 |                7.48
+ CCO      |       1 | 26000831     | Isabela Cavalcanti Duarte   |  8.65 |              8 | top 0.0%  |             900 |                7.56
+ CCO      |       2 | 26000591     | Eduarda Nunes Moreira       |  8.47 |              8 | top 0.1%  |             900 |                7.56
+ CCO      |       3 | 26001031     | Henrique Cavalcanti Martins |  8.43 |              8 | top 0.2%  |             900 |                7.56
+ CCO      |       3 | 26001725     | Beatriz Costa Cardoso       |  8.43 |             16 | top 0.2%  |             900 |                7.56
+ CCO      |       5 | 26001431     | João Gomes Moreira          |  8.40 |              8 | top 0.4%  |             900 |                7.56
+ SIS      |       1 | 26001246     | Beatriz Mendes Duarte       |  8.40 |              8 | top 0.0%  |             228 |                7.58
+ SIS      |       2 | 26001537     | Nicolas Monteiro Cardoso    |  8.38 |             12 | top 0.4%  |             228 |                7.58
+ SIS      |       3 | 26000127     | Débora Monteiro Pereira     |  8.31 |             10 | top 0.9%  |             228 |                7.58
+ SIS      |       4 | 26000267     | Isabela Santos Cavalcanti   |  8.26 |             10 | top 1.3%  |             228 |                7.58
+ SIS      |       5 | 26000596     | Olívia Carvalho Lima        |  8.25 |             12 | top 1.8%  |             228 |                7.58
+(15 rows)
+
+ ds_periodo | qt_disciplinas | qt_aprovadas | qt_media_semestre | qt_media_anterior | qt_variacao |   ds_tendencia    
+------------+----------------+--------------+-------------------+-------------------+-------------+-------------------
+ 2023/1     |              4 |            4 |              8.03 |                   |             | primeiro semestre
+ 2023/2     |              4 |            4 |              7.74 |              8.03 |       -0.29 | piorou
+ 2024/1     |              4 |            4 |              8.13 |              7.74 |        0.39 | melhorou
+ 2024/2     |              4 |            4 |              7.48 |              8.13 |       -0.65 | piorou
+ 2025/1     |              3 |            1 |              6.09 |              7.48 |       -1.39 | piorou
+ 2025/2     |              1 |            1 |              6.98 |              6.09 |        0.89 | melhorou
+ 2026/1     |              1 |            1 |              7.30 |              6.98 |        0.32 | melhorou
+(7 rows)
+
+ cd_matricula |         nm_aluno         | qt_turmas_juntos 
+--------------+--------------------------+------------------
+ 26000120     | Pedro Santos Santos      |               22
+ 26000224     | Mateus Monteiro Teixeira |               22
+ 26000332     | Hugo Moreira Pinto       |               22
+ 26000440     | Caio Rocha Nascimento    |               22
+ 26000544     | Tatiane Oliveira Moreira |               22
+(5 rows)
+
+ cd_matricula |          nm_aluno           | cd_curso | status_no_semestre 
+--------------+-----------------------------+----------+--------------------
+ 26000499     | Carla Souza Ramos           | ADS      | trancada
+ 26001799     | Nicolas Campos Rodrigues    | ADS      | trancada
+ 26000075     | Karen Pereira Almeida       | CCO      | trancada
+ 26000120     | Pedro Santos Santos         | CCO      | trancada
+ 26000291     | Felipe Duarte Nunes         | CCO      | trancada
+ 26000451     | Pedro Duarte Moreira        | CCO      | trancada
+ 26000691     | Otávio Oliveira Lima        | CCO      | trancada
+ 26000704     | Natália Rocha Moreira       | CCO      | trancada
+ 26000743     | Daniel Almeida Teixeira     | CCO      | trancada
+ 26000875     | Olívia Gomes Moreira        | CCO      | trancada
+ 26001000     | Henrique Barbosa Mendes     | CCO      | trancada
+ 26001035     | Beatriz Ribeiro Silva       | CCO      | trancada
+ 26001144     | Felipe Barbosa Ribeiro      | CCO      | trancada
+ 26001195     | Isabela Ramos Martins       | CCO      | trancada
+ 26001343     | Ana Martins Ribeiro         | CCO      | trancada
+ 26001600     | Henrique Costa Freitas      | CCO      | trancada
+ 26001903     | Caio Campos Campos          | CCO      | trancada
+ 26000096     | Caio Carvalho Teixeira      | SIS      | trancada
+ 26000306     | Débora Rocha Monteiro       | SIS      | trancada
+ 26000486     | Olívia Campos Monteiro      | SIS      | trancada
+ 26000596     | Olívia Carvalho Lima        | SIS      | trancada
+ 26000827     | Caio Santos Rodrigues       | SIS      | trancada
+ 26001046     | Otávio Rodrigues Cavalcanti | SIS      | trancada
+ 26001677     | Larissa Martins Rocha       | SIS      | trancada
+(24 rows)
+
+   papel   |             nome              |         ds_email         
+-----------+-------------------------------+--------------------------
+ professor | Carla Souza                   | prof031@exemplo.com.br
+ professor | Daniel Moreira                | prof026@exemplo.com.br
+ professor | Fernando Pereira              | prof032@exemplo.com.br
+ professor | Gabriela Silva                | prof029@exemplo.com.br
+ professor | Larissa Rodrigues             | prof030@exemplo.com.br
+ professor | Otávio Gomes                  | prof028@exemplo.com.br
+ professor | Pedro Duarte                  | prof001@exemplo.com.br
+ professor | Pedro Freitas                 | prof027@exemplo.com.br
+ aluno     | Ana Costa Lima                | aluno0924@exemplo.com.br
+ aluno     | Ana Gomes Pereira             | aluno0569@exemplo.com.br
+ aluno     | Ana Monteiro Souza            | aluno1648@exemplo.com.br
+ aluno     | Ana Nunes Nascimento          | aluno1180@exemplo.com.br
+ aluno     | Ana Pinto Barbosa             | aluno0992@exemplo.com.br
+ aluno     | Beatriz Almeida Teixeira      | aluno1487@exemplo.com.br
+ aluno     | Beatriz Mendes Duarte         | aluno1246@exemplo.com.br
+ aluno     | Beatriz Moreira Moreira       | aluno0912@exemplo.com.br
+ aluno     | Beatriz Nascimento Pinto      | aluno0312@exemplo.com.br
+ aluno     | Beatriz Nunes Nunes           | aluno0072@exemplo.com.br
+ aluno     | Beatriz Ramos Almeida         | aluno0552@exemplo.com.br
+ aluno     | Beatriz Ribeiro Cardoso       | aluno0756@exemplo.com.br
+ aluno     | Beatriz Santos Cavalcanti     | aluno0546@exemplo.com.br
+ aluno     | Bruno Monteiro Souza          | aluno1598@exemplo.com.br
+ aluno     | Bruno Moreira Lima            | aluno1767@exemplo.com.br
+ aluno     | Bruno Ribeiro Correia         | aluno1672@exemplo.com.br
+ aluno     | Bruno Ribeiro Lima            | aluno1519@exemplo.com.br
+ aluno     | Bruno Rocha Rodrigues         | aluno1419@exemplo.com.br
+ aluno     | Bruno Silva Araújo            | aluno1404@exemplo.com.br
+ aluno     | Bruno Silva Gomes             | aluno1319@exemplo.com.br
+ aluno     | Bruno Souza Moreira           | aluno0244@exemplo.com.br
+ aluno     | Bruno Teixeira Cavalcanti     | aluno0804@exemplo.com.br
+ aluno     | Caio Costa Pinto              | aluno1832@exemplo.com.br
+ aluno     | Caio Duarte Nunes             | aluno0336@exemplo.com.br
+ aluno     | Caio Freitas Pereira          | aluno0112@exemplo.com.br
+ aluno     | Caio Mendes Silva             | aluno0787@exemplo.com.br
+ aluno     | Caio Mendes Silva             | aluno0724@exemplo.com.br
+ aluno     | Caio Monteiro Ribeiro         | aluno0406@exemplo.com.br
+ aluno     | Caio Moreira Costa            | aluno0700@exemplo.com.br
+ aluno     | Caio Moreira Silva            | aluno0419@exemplo.com.br
+ aluno     | Caio Silva Teixeira           | aluno0367@exemplo.com.br
+ aluno     | Caio Souza Campos             | aluno1512@exemplo.com.br
+ aluno     | Carla Costa Duarte            | aluno0380@exemplo.com.br
+ aluno     | Carla Freitas Nunes           | aluno1448@exemplo.com.br
+ aluno     | Carla Monteiro Ramos          | aluno1316@exemplo.com.br
+ aluno     | Carla Nascimento Monteiro     | aluno1272@exemplo.com.br
+ aluno     | Carla Pereira Correia         | aluno1207@exemplo.com.br
+ aluno     | Carla Ribeiro Barbosa         | aluno1712@exemplo.com.br
+ aluno     | Carla Silva Nascimento        | aluno0648@exemplo.com.br
+ aluno     | Carla Souza Moreira           | aluno0748@exemplo.com.br
+ aluno     | Daniel Araújo Carvalho        | aluno1204@exemplo.com.br
+ aluno     | Daniel Correia Carvalho       | aluno1736@exemplo.com.br
+ aluno     | Daniel Moreira Pinto          | aluno1456@exemplo.com.br
+ aluno     | Daniel Pinto Monteiro         | aluno0519@exemplo.com.br
+ aluno     | Daniel Ramos Carvalho         | aluno1819@exemplo.com.br
+ aluno     | Daniel Ribeiro Ramos          | aluno0632@exemplo.com.br
+ aluno     | Daniel Rocha Ribeiro          | aluno1192@exemplo.com.br
+ aluno     | Daniel Souza Mendes           | aluno1820@exemplo.com.br
+ aluno     | Daniel Teixeira Freitas       | aluno0848@exemplo.com.br
+ aluno     | Débora Cavalcanti Ribeiro     | aluno0540@exemplo.com.br
+ aluno     | Débora Mendes Gomes           | aluno0819@exemplo.com.br
+ aluno     | Débora Rocha Monteiro         | aluno1398@exemplo.com.br
+ aluno     | Débora Teixeira Lima          | aluno1060@exemplo.com.br
+ aluno     | Eduarda Barbosa Lima          | aluno0004@exemplo.com.br
+ aluno     | Eduarda Gomes Costa           | aluno1032@exemplo.com.br
+ aluno     | Eduarda Gomes Santos          | aluno0232@exemplo.com.br
+ aluno     | Eduarda Martins Moreira       | aluno0672@exemplo.com.br
+ aluno     | Eduarda Mendes Souza          | aluno0060@exemplo.com.br
+ aluno     | Eduarda Monteiro Almeida      | aluno1069@exemplo.com.br
+ aluno     | Eduarda Oliveira Lima         | aluno1964@exemplo.com.br
+ aluno     | Eduarda Pinto Cardoso         | aluno1119@exemplo.com.br
+ aluno     | Eduarda Rocha Duarte          | aluno0204@exemplo.com.br
+ aluno     | Eduarda Rodrigues Freitas     | aluno1084@exemplo.com.br
+ aluno     | Felipe Barbosa Barbosa        | aluno1748@exemplo.com.br
+ aluno     | Felipe Barbosa Freitas        | aluno0598@exemplo.com.br
+ aluno     | Felipe Correia Ramos          | aluno1269@exemplo.com.br
+ aluno     | Felipe Monteiro Mendes        | aluno1198@exemplo.com.br
+ aluno     | Felipe Monteiro Ramos         | aluno0300@exemplo.com.br
+ aluno     | Felipe Moreira Souza          | aluno1912@exemplo.com.br
+ aluno     | Felipe Nunes Cardoso          | aluno0524@exemplo.com.br
+ aluno     | Fernando Correia Rodrigues    | aluno0444@exemplo.com.br
+ aluno     | Fernando Freitas Cardoso      | aluno1844@exemplo.com.br
+ aluno     | Fernando Martins Moreira      | aluno1980@exemplo.com.br
+ aluno     | Fernando Nunes Rodrigues      | aluno0219@exemplo.com.br
+ aluno     | Fernando Pereira Oliveira     | aluno0884@exemplo.com.br
+ aluno     | Fernando Ribeiro Barbosa      | aluno0192@exemplo.com.br
+ aluno     | Fernando Ribeiro Santos       | aluno0100@exemplo.com.br
+ aluno     | Fernando Rodrigues Cardoso    | aluno0180@exemplo.com.br
+ aluno     | Fernando Rodrigues Martins    | aluno0507@exemplo.com.br
+ aluno     | Fernando Rodrigues Rocha      | aluno1048@exemplo.com.br
+ aluno     | Fernando Santos Carvalho      | aluno0966@exemplo.com.br
+ aluno     | Fernando Santos Gomes         | aluno1698@exemplo.com.br
+ aluno     | Gabriela Cardoso Silva        | aluno0832@exemplo.com.br
+ aluno     | Gabriela Cavalcanti Gomes     | aluno0032@exemplo.com.br
+ aluno     | Gabriela Lima Teixeira        | aluno0472@exemplo.com.br
+ aluno     | Gabriela Pereira Ramos        | aluno0404@exemplo.com.br
+ aluno     | Gabriela Pinto Rodrigues      | aluno1164@exemplo.com.br
+ aluno     | Giovana Martins Gomes         | aluno0498@exemplo.com.br
+ aluno     | Giovana Nascimento Freitas    | aluno1977@exemplo.com.br
+ aluno     | Giovana Nunes Pinto           | aluno0620@exemplo.com.br
+ aluno     | Giovana Ribeiro Martins       | aluno0432@exemplo.com.br
+ aluno     | Giovana Santos Lima           | aluno1969@exemplo.com.br
+ aluno     | Giovana Teixeira Cardoso      | aluno0898@exemplo.com.br
+ aluno     | Henrique Barbosa Pereira      | aluno0297@exemplo.com.br
+ aluno     | Henrique Gomes Cardoso        | aluno1500@exemplo.com.br
+ aluno     | Henrique Gomes Costa          | aluno0056@exemplo.com.br
+ aluno     | Henrique Gomes Nascimento     | aluno1067@exemplo.com.br
+ aluno     | Henrique Lima Souza           | aluno0896@exemplo.com.br
+ aluno     | Henrique Martins Almeida      | aluno0198@exemplo.com.br
+ aluno     | Henrique Martins Teixeira     | aluno1700@exemplo.com.br
+ aluno     | Henrique Nunes Campos         | aluno1669@exemplo.com.br
+ aluno     | Henrique Nunes Lima           | aluno0248@exemplo.com.br
+ aluno     | Henrique Pinto Santos         | aluno0140@exemplo.com.br
+ aluno     | Henrique Ramos Teixeira       | aluno1460@exemplo.com.br
+ aluno     | Henrique Rodrigues Almeida    | aluno0017@exemplo.com.br
+ aluno     | Henrique Rodrigues Campos     | aluno1907@exemplo.com.br
+ aluno     | Henrique Teixeira Rodrigues   | aluno0469@exemplo.com.br
+ aluno     | Hugo Araújo Lima              | aluno0780@exemplo.com.br
+ aluno     | Hugo Cardoso Pereira          | aluno1919@exemplo.com.br
+ aluno     | Hugo Cardoso Ribeiro          | aluno1420@exemplo.com.br
+ aluno     | Hugo Carvalho Oliveira        | aluno0826@exemplo.com.br
+ aluno     | Hugo Carvalho Teixeira        | aluno1940@exemplo.com.br
+ aluno     | Hugo Monteiro Mendes          | aluno0872@exemplo.com.br
+ aluno     | Hugo Nascimento Carvalho      | aluno0752@exemplo.com.br
+ aluno     | Hugo Nunes Santos             | aluno1724@exemplo.com.br
+ aluno     | Hugo Ramos Martins            | aluno1806@exemplo.com.br
+ aluno     | Hugo Ribeiro Costa            | aluno1020@exemplo.com.br
+ aluno     | Hugo Santos Teixeira          | aluno1792@exemplo.com.br
+ aluno     | Isabela Barbosa Carvalho      | aluno1580@exemplo.com.br
+ aluno     | Isabela Cardoso Mendes        | aluno1260@exemplo.com.br
+ aluno     | Isabela Carvalho Nascimento   | aluno1876@exemplo.com.br
+ aluno     | Isabela Correia Silva         | aluno1619@exemplo.com.br
+ aluno     | Isabela Freitas Nascimento    | aluno1592@exemplo.com.br
+ aluno     | Isabela Monteiro Ramos        | aluno0124@exemplo.com.br
+ aluno     | Isabela Moreira Duarte        | aluno0647@exemplo.com.br
+ aluno     | Isabela Pinto Carvalho        | aluno0698@exemplo.com.br
+ aluno     | Isabela Pinto Ribeiro         | aluno1148@exemplo.com.br
+ aluno     | Isabela Ribeiro Costa         | aluno0044@exemplo.com.br
+ aluno     | Isabela Santos Duarte         | aluno1484@exemplo.com.br
+ aluno     | João Almeida Gomes            | aluno0269@exemplo.com.br
+ aluno     | João Araújo Souza             | aluno0869@exemplo.com.br
+ aluno     | João Carvalho Araújo          | aluno1898@exemplo.com.br
+ aluno     | João Cavalcanti Carvalho      | aluno0220@exemplo.com.br
+ aluno     | João Cavalcanti Lima          | aluno1312@exemplo.com.br
+ aluno     | João Costa Ribeiro            | aluno0740@exemplo.com.br
+ aluno     | João Gomes Freitas            | aluno0712@exemplo.com.br
+ aluno     | João Moreira Pinto            | aluno0660@exemplo.com.br
+ aluno     | João Moreira Santos           | aluno0592@exemplo.com.br
+ aluno     | João Rocha Monteiro           | aluno1352@exemplo.com.br
+ aluno     | João Rocha Pinto              | aluno1176@exemplo.com.br
+ aluno     | João Silva Freitas            | aluno1526@exemplo.com.br
+ aluno     | João Silva Santos             | aluno0948@exemplo.com.br
+ aluno     | João Teixeira Nunes           | aluno1340@exemplo.com.br
+ aluno     | Karen Almeida Oliveira        | aluno0272@exemplo.com.br
+ aluno     | Karen Campos Silva            | aluno1152@exemplo.com.br
+ aluno     | Karen Mendes Martins          | aluno1219@exemplo.com.br
+ aluno     | Karen Nascimento Cavalcanti   | aluno1169@exemplo.com.br
+ aluno     | Karen Nascimento Martins      | aluno0148@exemplo.com.br
+ aluno     | Karen Nunes Gomes             | aluno0260@exemplo.com.br
+ aluno     | Karen Ribeiro Martins         | aluno1869@exemplo.com.br
+ aluno     | Karen Silva Freitas           | aluno0098@exemplo.com.br
+ aluno     | Karen Teixeira Monteiro       | aluno1004@exemplo.com.br
+ aluno     | Larissa Barbosa Nascimento    | aluno0369@exemplo.com.br
+ aluno     | Larissa Cavalcanti Gomes      | aluno1524@exemplo.com.br
+ aluno     | Larissa Costa Nunes           | aluno0157@exemplo.com.br
+ aluno     | Larissa Martins Oliveira      | aluno1552@exemplo.com.br
+ aluno     | Larissa Moreira Correia       | aluno0398@exemplo.com.br
+ aluno     | Larissa Oliveira Cardoso      | aluno1232@exemplo.com.br
+ aluno     | Larissa Pereira Gomes         | aluno1472@exemplo.com.br
+ aluno     | Larissa Ribeiro Freitas       | aluno1900@exemplo.com.br
+ aluno     | Larissa Ribeiro Souza         | aluno1860@exemplo.com.br
+ aluno     | Lucas Barbosa Costa           | aluno1324@exemplo.com.br
+ aluno     | Lucas Campos Campos           | aluno1660@exemplo.com.br
+ aluno     | Lucas Cavalcanti Lima         | aluno0900@exemplo.com.br
+ aluno     | Lucas Correia Nascimento      | aluno0319@exemplo.com.br
+ aluno     | Lucas Freitas Rodrigues       | aluno1627@exemplo.com.br
+ aluno     | Lucas Monteiro Nascimento     | aluno0798@exemplo.com.br
+ aluno     | Lucas Oliveira Freitas        | aluno1106@exemplo.com.br
+ aluno     | Lucas Oliveira Rodrigues      | aluno0340@exemplo.com.br
+ aluno     | Lucas Rocha Souza             | aluno0717@exemplo.com.br
+ aluno     | Marina Carvalho Oliveira      | aluno0266@exemplo.com.br
+ aluno     | Marina Cavalcanti Cardoso     | aluno0119@exemplo.com.br
+ aluno     | Marina Cavalcanti Costa       | aluno1044@exemplo.com.br
+ aluno     | Marina Cavalcanti Lima        | aluno0164@exemplo.com.br
+ aluno     | Marina Cavalcanti Ribeiro     | aluno1604@exemplo.com.br
+ aluno     | Marina Correia Pereira        | aluno0580@exemplo.com.br
+ aluno     | Marina Costa Cavalcanti       | aluno1632@exemplo.com.br
+ aluno     | Marina Duarte Carvalho        | aluno0420@exemplo.com.br
+ aluno     | Marina Mendes Mendes          | aluno1137@exemplo.com.br
+ aluno     | Marina Moreira Nascimento     | aluno0964@exemplo.com.br
+ aluno     | Marina Nunes Lima             | aluno1300@exemplo.com.br
+ aluno     | Marina Ramos Ramos            | aluno1548@exemplo.com.br
+ aluno     | Marina Teixeira Gomes         | aluno0927@exemplo.com.br
+ aluno     | Mateus Campos Barbosa         | aluno0087@exemplo.com.br
+ aluno     | Mateus Carvalho Nascimento    | aluno1248@exemplo.com.br
+ aluno     | Mateus Costa Teixeira         | aluno0169@exemplo.com.br
+ aluno     | Mateus Oliveira Duarte        | aluno0476@exemplo.com.br
+ aluno     | Mateus Pereira Nunes          | aluno0980@exemplo.com.br
+ aluno     | Mateus Pinto Nascimento       | aluno1348@exemplo.com.br
+ aluno     | Mateus Rocha Almeida          | aluno1244@exemplo.com.br
+ aluno     | Mateus Rodrigues Monteiro     | aluno0437@exemplo.com.br
+ aluno     | Mateus Souza Moreira          | aluno1019@exemplo.com.br
+ aluno     | Mateus Teixeira Correia       | aluno1798@exemplo.com.br
+ aluno     | Natália Cardoso Rodrigues     | aluno1298@exemplo.com.br
+ aluno     | Natália Monteiro Almeida      | aluno1124@exemplo.com.br
+ aluno     | Natália Monteiro Correia      | aluno0857@exemplo.com.br
+ aluno     | Natália Nascimento Souza      | aluno1364@exemplo.com.br
+ aluno     | Natália Oliveira Araújo       | aluno1804@exemplo.com.br
+ aluno     | Natália Oliveira Rocha        | aluno0619@exemplo.com.br
+ aluno     | Natália Pereira Almeida       | aluno1740@exemplo.com.br
+ aluno     | Natália Pereira Moreira       | aluno1872@exemplo.com.br
+ aluno     | Natália Ribeiro Cavalcanti    | aluno1220@exemplo.com.br
+ aluno     | Natália Santos Lima           | aluno1719@exemplo.com.br
+ aluno     | Natália Santos Teixeira       | aluno1140@exemplo.com.br
+ aluno     | Natália Souza Cardoso         | aluno0084@exemplo.com.br
+ aluno     | Natália Teixeira Campos       | aluno0069@exemplo.com.br
+ aluno     | Nicolas Martins Mendes        | aluno1764@exemplo.com.br
+ aluno     | Nicolas Ribeiro Martins       | aluno0644@exemplo.com.br
+ aluno     | Nicolas Rocha Gomes           | aluno0298@exemplo.com.br
+ aluno     | Olívia Almeida Pinto          | aluno0684@exemplo.com.br
+ aluno     | Olívia Carvalho Cavalcanti    | aluno0564@exemplo.com.br
+ aluno     | Olívia Lima Carvalho          | aluno0719@exemplo.com.br
+ aluno     | Olívia Nascimento Oliveira    | aluno1098@exemplo.com.br
+ aluno     | Olívia Nunes Araújo           | aluno1998@exemplo.com.br
+ aluno     | Otávio Almeida Mendes         | aluno1752@exemplo.com.br
+ aluno     | Otávio Lima Costa             | aluno0577@exemplo.com.br
+ aluno     | Otávio Nascimento Souza       | aluno1952@exemplo.com.br
+ aluno     | Otávio Pereira Barbosa        | aluno0860@exemplo.com.br
+ aluno     | Otávio Pereira Monteiro       | aluno1924@exemplo.com.br
+ aluno     | Otávio Pinto Rodrigues        | aluno0500@exemplo.com.br
+ aluno     | Otávio Silva Santos           | aluno1848@exemplo.com.br
+ aluno     | Otávio Teixeira Mendes        | aluno1948@exemplo.com.br
+ aluno     | Pedro Carvalho Freitas        | aluno0669@exemplo.com.br
+ aluno     | Pedro Carvalho Mendes         | aluno0484@exemplo.com.br
+ aluno     | Pedro Correia Cardoso         | aluno1596@exemplo.com.br
+ aluno     | Pedro Duarte Rocha            | aluno0769@exemplo.com.br
+ aluno     | Pedro Moreira Correia         | aluno0604@exemplo.com.br
+ aluno     | Pedro Nascimento Rocha        | aluno1769@exemplo.com.br
+ aluno     | Pedro Nunes Teixeira          | aluno0324@exemplo.com.br
+ aluno     | Pedro Pinto Ramos             | aluno0548@exemplo.com.br
+ aluno     | Pedro Ribeiro Duarte          | aluno1386@exemplo.com.br
+ aluno     | Pedro Souza Gomes             | aluno0997@exemplo.com.br
+ aluno     | Rafaela Costa Lima            | aluno0048@exemplo.com.br
+ aluno     | Rafaela Duarte Martins        | aluno0352@exemplo.com.br
+ aluno     | Rafaela Gomes Mendes          | aluno0998@exemplo.com.br
+ aluno     | Rafaela Monteiro Costa        | aluno1644@exemplo.com.br
+ aluno     | Rafaela Nascimento Pinto      | aluno1444@exemplo.com.br
+ aluno     | Rafaela Rocha Araújo          | aluno0126@exemplo.com.br
+ aluno     | Rafaela Santos Oliveira       | aluno0196@exemplo.com.br
+ aluno     | Samuel Almeida Cardoso        | aluno0792@exemplo.com.br
+ aluno     | Samuel Araújo Campos          | aluno0952@exemplo.com.br
+ aluno     | Samuel Campos Freitas         | aluno0616@exemplo.com.br
+ aluno     | Samuel Carvalho Araújo        | aluno0940@exemplo.com.br
+ aluno     | Samuel Pereira Nunes          | aluno0844@exemplo.com.br
+ aluno     | Samuel Pereira Rodrigues      | aluno0969@exemplo.com.br
+ aluno     | Tatiane Cardoso Monteiro      | aluno1884@exemplo.com.br
+ aluno     | Tatiane Cardoso Oliveira      | aluno0364@exemplo.com.br
+ aluno     | Tatiane Freitas Mendes        | aluno0820@exemplo.com.br
+ aluno     | Tatiane Freitas Silva         | aluno1432@exemplo.com.br
+ aluno     | Tatiane Lima Moreira          | aluno0284@exemplo.com.br
+ aluno     | Tatiane Moreira Correia       | aluno1369@exemplo.com.br
+ aluno     | Tatiane Nascimento Mendes     | aluno1417@exemplo.com.br
+ aluno     | Tatiane Pereira Souza         | aluno1469@exemplo.com.br
+ aluno     | Tatiane Pinto Mendes          | aluno1780@exemplo.com.br
+ aluno     | Tatiane Pinto Rodrigues       | aluno0686@exemplo.com.br
+ aluno     | Tatiane Pinto Teixeira        | aluno1620@exemplo.com.br
+ aluno     | Tatiane Rodrigues Barbosa     | aluno1564@exemplo.com.br
+ aluno     | Tatiane Santos Santos         | aluno0392@exemplo.com.br
+ aluno     | Vinícius Barbosa Ramos        | aluno1697@exemplo.com.br
+ aluno     | Vinícius Campos Gomes         | aluno1569@exemplo.com.br
+ aluno     | Vinícius Correia Lima         | aluno1540@exemplo.com.br
+ aluno     | Vinícius Costa Cardoso        | aluno1100@exemplo.com.br
+ aluno     | Vinícius Gomes Nunes          | aluno0448@exemplo.com.br
+ aluno     | Vinícius Mendes Monteiro      | aluno1277@exemplo.com.br
+ aluno     | Vinícius Nascimento Rodrigues | aluno1347@exemplo.com.br
+ aluno     | Vinícius Pereira Moreira      | aluno1666@exemplo.com.br
+ aluno     | Vinícius Pereira Rodrigues    | aluno0019@exemplo.com.br
+(275 rows)
+
+           tipo            | linhas 
+---------------------------+--------
+ UNION ALL (com repetidos) |     16
+ UNION (sem repetidos)     |      8
+(2 rows)
+

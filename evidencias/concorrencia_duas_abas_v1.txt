@@ -1,5 +1,5 @@
 EVIDENCIAS - TRANSACOES E CONCORRENCIA (a ultima vaga da turma CCO072 2026/2 A: 35 vagas, 34 ocupadas)
-Gerado em 23/11/2026 09:46 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
+Gerado em 23/11/2026 10:41 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
 com os scripts 01 a 04 na ordem do README.
 Como foi gerado: duas sessoes psql abertas ao mesmo tempo no banco matricula, no papel das duas abas do Query Tool.
 Cada passo dos scripts 05b, 05c e 05d foi mandado so para a aba que o script indica, com 1,5 s entre um e outro.
@@ -13,8 +13,8 @@ No fim, as medicoes X1 a X5 usadas na comparacao do README (nao fazem parte da d
 
 -- 05a_concorrencia_preparacao_v1.sql inteiro (F5), nas DUAS abas
 [ABA 1] SET
-[ABA 1] DO
 [ABA 1] NOTICE:  00000: ok, turma_alvo = 1529
+[ABA 1] DO
 [ABA 1]  id_turma | qt_vagas | ocupadas | vagas_livres 
 [ABA 1] ----------+----------+----------+--------------
 [ABA 1]      1529 |       35 |       34 |            1
@@ -216,8 +216,8 @@ No fim, as medicoes X1 a X5 usadas na comparacao do README (nao fazem parte da d
 [ABA 2] HINT:  The transaction might succeed if retried.
 [ABA 2] ROLLBACK
    (esperando trava: nenhuma)
-[ABA 2] WARNING:  25P01: there is no transaction in progress
 [ABA 2] ROLLBACK
+[ABA 2] WARNING:  25P01: there is no transaction in progress
    (esperando trava: nenhuma)
    depois: turma A com 35 vagas, 35 ocupadas, vagas_livres = 0 | turma B com 45 vagas, 34 ocupadas, vagas_livres = 11
    limpeza das turmas A e B: DELETE 1 -> turma A com 35 vagas, 34 ocupadas, vagas_livres = 1 | turma B com 45 vagas, 34 ocupadas, vagas_livres = 11
@@ -290,3 +290,9 @@ X2 SERIALIZABLE turmas diferentes: ABA 2 recebeu 40001 (falso positivo)
 X3 FOR UPDATE turmas diferentes: ninguem esperou
 X4 INSERT com conferencia, sem FOR UPDATE: turma A com 35 vagas, 36 ocupadas, vagas_livres = -1
 X5 SERIALIZABLE turma com 25 ativas: sem trava na tabela tb_matricula inteira
+
+==================== a mesma demonstracao depois do 11 (banco completo: gatilhos de log, GIN, papeis e RLS) ====================
+Passos iguais aos de cima, rodados de novo no fim da rodada. Saida completa: so o RESUMO abaixo.
+05b_concorrencia_erro_v1.sql                     35 vagas, 36 ocupadas, vagas_livres = -1
+05c_concorrencia_solucao1_for_update_v1.sql      35 vagas, 35 ocupadas, vagas_livres = 0 (ABA 2 esperou a trava)
+05d_concorrencia_solucao2_serializable_v1.sql    35 vagas, 35 ocupadas, vagas_livres = 0 (ABA 2 recebeu o erro 40001 e repetiu)

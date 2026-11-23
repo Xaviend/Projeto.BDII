@@ -1,5 +1,5 @@
 EVIDENCIAS - BACKUP E RESTAURACAO
-Ensaio de docs/backup_restauracao.md em 23/11/2026 09:46 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1), banco criado do zero com os scripts 01 a 11
+Ensaio de docs/backup_restauracao.md em 23/11/2026 10:41 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1), banco criado do zero com os scripts 01 a 11
 e um schema academico simulado ao lado (como o do professor). Impressao digital = sql/11_administracao_backup_conferencia_v1.sql.
 Backup: pg_dump -n projeto_bd2 -Fc (so o schema do projeto) e pg_dumpall --roles-only --no-role-passwords
 (linhas com senha no arquivo de papeis: 0).
@@ -39,7 +39,7 @@ caso C, erro humano e volta ao backup       : >>> IMPRESSAO DIGITAL GERAL (compa
 caso D, servidor novo vazio                 : >>> IMPRESSAO DIGITAL GERAL (compare esta) | 80510 | bdd7688afe07644b01e502138288b6ba
 
 controle (caso C, com o erro e antes de restaurar, tem que ser DIFERENTE):
->>> IMPRESSAO DIGITAL GERAL (compare esta) | 80460 | 55e3345f17c7cdd0aa845f6b7a287d44
+>>> IMPRESSAO DIGITAL GERAL (compare esta) | 80460 | 2d045f7085f3563ab42419a014c5d16e
 
 schema academico intacto depois dos casos B e C (linhas em academico.aluno_prof, esperado 1): 1 e 1
 testes de seguranca (10) depois da restauracao, esperado 29 OK: caso C 29 OK, caso D 29 OK

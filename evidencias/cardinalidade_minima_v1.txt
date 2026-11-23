@@ -1,0 +1,40 @@
+EVIDENCIAS - CARDINALIDADE MINIMA NA CARGA (modelo/ e README, "Como ler a cardinalidade")
+Gerado em 23/11/2026 10:41 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1), banco criado do zero com os scripts 01 a 06.
+Consulta: ferramentas/cardinalidade_minima.sql. 0 = todo pai tem filho; mais de 0 = existe pai sem filho na carga.
+
+                caso                | sem_filho | total 
+------------------------------------+-----------+-------
+ cidade sem campus                  |         0 |     2
+ campus sem curso                   |         1 |     2
+ campus sem sala                    |         0 |     2
+ campus sem feriado local           |         1 |     2
+ feriado sem campus (nacional)      |         6 |     7
+ curso sem curriculo                |         0 |     3
+ curso sem aluno                    |         0 |     3
+ curriculo sem disciplina           |         0 |     4
+ curriculo sem aluno                |         0 |     4
+ disciplina fora de grade           |         0 |    24
+ disciplina sem pre-requisito       |         4 |    24
+ disciplina que nao e pre-requisito |         7 |    24
+ disciplina sem turma               |         0 |    24
+ periodo letivo sem turma           |         0 |     8
+ periodo letivo sem horario         |         0 |     8
+ professor sem turma                |         0 |    32
+ turma sem horario                  |         0 |  1536
+ sala sem horario                   |         4 |    12
+ aluno sem matricula                |         0 |  2000
+ turma sem matricula                |       512 |  1536
+ matricula sem historico            |       387 | 24964
+(21 rows)
+
+                caso                 |       quem       
+-------------------------------------+------------------
+ campus sem curso                    | Goiânia Centro
+ matricula sem historico, por status | cancelada: 218
+ matricula sem historico, por status | trancada: 169
+ sala sem horario                    | A101 (teorica)
+ sala sem horario                    | A102 (teorica)
+ sala sem horario                    | AUD1 (auditorio)
+ sala sem horario                    | G101 (teorica)
+(7 rows)
+

@@ -1,6 +1,6 @@
 # Autores
 
-Banco de Dados II (CCO072), prof. Rodrigo Gonçalves. Cada um cuidou de uma frente e todos revisam os Pull Requests dos outros antes do merge.
+Banco de Dados II (CCO072), prof. Rodrigo Gonçalves. Cada um cuidou de uma frente. A integração das frentes na main e as revisões finais ficaram com o Arthur, como está descrito no fim deste arquivo; o histórico de quem fez cada commit está no `git log`.
 
 | Integrante | Matrícula | Frente |
 |---|---|---|
@@ -51,10 +51,20 @@ Depois dessa revisão, o Iury subiu o modelo conceitual e a versão final do ló
 
 Na apresentação o professor apontou o formato dos modelos e o excesso de mínima 0 nas cardinalidades. Arthur fez a correção a partir do modelo do Iury:
 
-- redesenhou os dois diagramas no formato da Aula 04 (fundo branco, cabeçalho do IESB, linhas retas e o par nas duas pontas) e trocou a mínima dos pais: 0 só onde a carga tem caso real de pai sem filho, com a contagem de cada caso no README;
+- redesenhou os dois diagramas no formato da Aula 04 (fundo branco, cabeçalho do IESB, linhas sem curva e o par nas duas pontas) e trocou a mínima dos pais: 0 só onde a carga tem caso real de pai sem filho, com a contagem de cada caso no README;
 - passou os comentários de cardinalidade do `01_modelo_fisico_v1.sql` para o mesmo padrão dos diagramas;
 - acrescentou 13 testes ao `02_testes_restricoes_v1.sql` (NOT NULL da FK, UNIQUE da matrícula, do histórico e do CPF, os CHECKs que faltavam, domínio de frequência, enum e coluna gerada) e trocou as conferências que sumiam no F5 por avisos na aba Messages;
 - no `04_indices_v1.sql`, o controle que prova que o índice comum não atende o LIKE com a collation do banco;
 - no `07` e no `08`, um `COMMIT` antes do bloco de teste, porque no F5 o `ROLLBACK` do teste desfazia também o que o script criou antes dele; e o "semestre atual" das views passou a ser o mais recente cadastrado, como no `06`;
 - na evidência de concorrência, as medições X4 (o INSERT com conferência, sem FOR UPDATE, também estoura a turma) e X5 (travas numa turma menor);
 - gerou de novo todas as evidências numa rodada do zero e corrigiu o README.
+
+## Conferência final pelos critérios da avaliação (23/11, Arthur)
+
+Arthur rodou o projeto inteiro do zero, conferiu cada número do README contra a saída e cada critério da avaliação, e corrigiu o que é da frente dele e a documentação:
+
+- o `10_administracao_seguranca_testes_v1.sql` ganhou o veredito numa linha só: no fim ele diz "RESULTADO: todos os testes deram OK" ou termina com ERRO dizendo quantos testes falharam, para ninguém ter que contar 29 linhas na aba Messages. Os 24 mutantes foram rodados de novo e todos terminam com ERRO: 23 com o RESULTADO e 1 (o aluno colocado no grupo secretaria) antes dele, num erro de matrícula repetida causado pelo próprio estrago, depois de 8 FALHOU;
+- o `07` e o `08` explicam o WARNING "there is no transaction in progress" que aparece no F5;
+- a pasta `ferramentas/` guarda os scripts que geram todas as evidências (`rodada_completa.sh`), o F5 do pgAdmin no PostgreSQL 16 e no 17 (`f5_emulacao.sh`), a demonstração das duas abas (`concorrencia_evidencia.py`) e a contagem da cardinalidade mínima (`cardinalidade_minima.sql`), para qualquer um gerar as evidências de novo;
+- três evidências novas: o resultado das 10 consultas, as contagens da cardinalidade mínima e a rodada com F5 nas duas versões;
+- o README corrige o semestre do aluno 26000002 (é do 2º), o aviso sobre rodar o 03 depois do 08, a descrição dos diagramas e a seção do Git, que agora diz como o histórico ficou de verdade.

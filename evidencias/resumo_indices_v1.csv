@@ -1,5 +1,5 @@
 consulta,ms_antes,ms_depois,vezes_mais_rapido,buffers_antes,buffers_depois
-1 vagas ocupadas da turma,0.167,0.036,4.6,102,31
-2 top 10 medias dos aprovados,3.099,0.013,238.4,197,12
-3 ultimas 20 matriculas,2.376,0.013,182.8,184,22
-4 aluno pelo prefixo do nome,0.071,0.011,6.5,31,3
+1 vagas ocupadas da turma,0.146,0.029,5.0,102,31
+2 top 10 medias dos aprovados,2.369,0.012,197.4,197,12
+3 ultimas 20 matriculas,2.171,0.012,180.9,184,22
+4 aluno pelo prefixo do nome,0.072,0.010,7.2,31,3
