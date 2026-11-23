@@ -157,6 +157,20 @@ $q$SELECT id_matricula, id_aluno, dt_matricula FROM tb_matricula
 SELECT pg_temp.fn_explain('4 aluno pelo prefixo do nome', 'antes',
 $q$SELECT id_aluno, nm_aluno FROM tb_aluno WHERE nm_aluno LIKE 'Ana Silva%'$q$);
 
+-- CONTROLE da frase acima: o mesmo índice SEM o varchar_pattern_ops. Com a collation deste banco (o NOTICE mostra
+-- qual é) o plano continua Seq Scan, porque o índice comum não serve para o LIKE. Cria, mostra o plano e apaga.
+CREATE INDEX ix_tmp_aluno_nm_comum ON tb_aluno (nm_aluno);
+DO $$
+DECLARE v_linha TEXT;
+BEGIN
+    RAISE NOTICE E'\n=== 4 controle: indice comum, sem pattern_ops (collation do banco: %) ===',
+        (SELECT datcollate FROM pg_database WHERE datname = current_database());
+    FOR v_linha IN EXECUTE $q$EXPLAIN SELECT id_aluno, nm_aluno FROM tb_aluno WHERE nm_aluno LIKE 'Ana Silva%'$q$ LOOP
+        RAISE NOTICE '%', v_linha;
+    END LOOP;
+END $$;
+DROP INDEX ix_tmp_aluno_nm_comum;
+
 CREATE INDEX ix_aluno_nm_pattern ON tb_aluno (nm_aluno varchar_pattern_ops);
 
 SELECT pg_temp.fn_explain('4 aluno pelo prefixo do nome', 'depois',
