@@ -11,10 +11,10 @@ Banco de Dados II (CCO072), prof. Rodrigo Gonçalves. Cada um cuidou de uma fren
 ## Iury Xavier Bomfim: modelagem física e desempenho
 
 - `modelo/modelo_conceitual.drawio`: modelo conceitual (DER, notação de Chen) com as 12 entidades, os 15 relacionamentos e a passagem do conceitual para o lógico no rodapé
-- `modelo/modelo_logico.v4.drawio`: modelo lógico com as 17 tabelas, tipos, chaves e cardinalidades
+- `modelo/modelo_logico.drawio`: modelo lógico com as 17 tabelas, tipos, chaves e cardinalidades
 - `sql/01_modelo_fisico_v1.sql`: schema `projeto_bd2`, tabelas, domínios, enums, restrições (CHECK, UNIQUE, FK composta, EXCLUDE de horário, colunas geradas)
-- `sql/02_testes_restricoes_v1.sql`: 14 testes que provam que as restrições barram dado errado
-- `sql/03_carga_v1.sql`: carga sintética e determinística (2000 alunos, 1536 turmas, ~25 mil matrículas)
+- `sql/02_testes_restricoes_v1.sql`: 27 testes que provam que as restrições barram dado errado e 3 conferências de valor
+- `sql/03_carga_v1.sql`: carga sintética e determinística (2000 alunos, 1536 turmas, 24.964 matrículas)
 - `sql/04_indices_v1.sql`: 4 índices (um parcial) com EXPLAIN antes e depois
 - `evidencias/explain_indices_v1.txt` e `evidencias/resumo_indices_v1.csv`
 
@@ -46,3 +46,15 @@ Arthur conferiu a entrega inteira montando o banco do zero pelo README e fez os 
 - conferiu o diagrama v4 do Iury contra o banco e prendeu de novo na coluna certa as 7 linhas que tinham se soltado, com os únicos de mais de uma coluna no rodapé.
 
 Depois dessa revisão, o Iury subiu o modelo conceitual e a versão final do lógico, com o par (mín,máx) escrito junto da entidade que ele descreve, como na Aula 04. Arthur conferiu de novo as 17 tabelas do lógico contra o banco: colunas, tipos e chaves batem.
+
+## Correção depois da apresentação (23/11, Arthur)
+
+Na apresentação o professor apontou o formato dos modelos e o excesso de mínima 0 nas cardinalidades. Arthur fez a correção a partir do modelo do Iury:
+
+- redesenhou os dois diagramas no formato da Aula 04 (fundo branco, cabeçalho do IESB, linhas retas e o par nas duas pontas) e trocou a mínima dos pais: 0 só onde a carga tem caso real de pai sem filho, com a contagem de cada caso no README;
+- passou os comentários de cardinalidade do `01_modelo_fisico_v1.sql` para o mesmo padrão dos diagramas;
+- acrescentou 13 testes ao `02_testes_restricoes_v1.sql` (NOT NULL da FK, UNIQUE da matrícula, do histórico e do CPF, os CHECKs que faltavam, domínio de frequência, enum e coluna gerada) e trocou as conferências que sumiam no F5 por avisos na aba Messages;
+- no `04_indices_v1.sql`, o controle que prova que o índice comum não atende o LIKE com a collation do banco;
+- no `07` e no `08`, um `COMMIT` antes do bloco de teste, porque no F5 o `ROLLBACK` do teste desfazia também o que o script criou antes dele; e o "semestre atual" das views passou a ser o mais recente cadastrado, como no `06`;
+- na evidência de concorrência, as medições X4 (o INSERT com conferência, sem FOR UPDATE, também estoura a turma) e X5 (travas numa turma menor);
+- gerou de novo todas as evidências numa rodada do zero e corrigiu o README.

@@ -27,7 +27,7 @@ Rodar na ordem do número do arquivo, todos no banco `matricula`:
 | Ordem | Arquivo | O que faz |
 |---|---|---|
 | 01 | `sql/01_modelo_fisico_v1.sql` | Apaga e cria o schema `projeto_bd2` com as 17 tabelas, domínios, enums e restrições. |
-| 02 | `sql/02_testes_restricoes_v1.sql` | Prova que as restrições funcionam: 14 testes que têm que ser barrados. Roda dentro de `BEGIN ... ROLLBACK`, então não deixa nada no banco. Pode pular. |
+| 02 | `sql/02_testes_restricoes_v1.sql` | Prova que as restrições funcionam: 27 testes que têm que ser barrados (CHECK, UNIQUE, NOT NULL, FK simples e composta, EXCLUDE, domínio, enum e coluna gerada) e 3 conferências de valor. Na aba Messages: 27 "OK barrado", 3 "OK conferido" e nenhum "FALHOU". Roda dentro de `BEGIN ... ROLLBACK`, então não deixa nada no banco, e dá o mesmo resultado antes ou depois da carga. |
 | 03 | `sql/03_carga_v1.sql` | Popula o banco com dados de teste (ver "Carga de dados" abaixo). |
 | 04 | `sql/04_indices_v1.sql` | Cria 4 índices (um parcial) e mede o ganho de cada um com `EXPLAIN (ANALYZE, BUFFERS)` (ver "Índices" abaixo). |
 | 05a | `sql/05a_concorrencia_preparacao_v1.sql` | Confere o banco e guarda a turma e os alunos da demonstração da "última vaga". Roda nas DUAS abas. Sem ele os scripts 05b, 05c e 05d dão erro. |
@@ -87,7 +87,7 @@ Clica no banco matricula, abre o Tools > Query Tool, abre o arquivo pela pastinh
 
 Tudo do projeto fica no schema projeto_bd2 pra não misturar com o schema academico que já vem no banco do professor.
 
-- O `01_modelo_fisico_v1.sql` apaga e cria o schema de novo, então dá pra rodar várias vezes sem problema. **Mas isso apaga também os dados:** depois dele, roda o `03_carga_v1.sql` e o `04_indices_v1.sql` de novo.
+- O `01_modelo_fisico_v1.sql` apaga e cria o schema de novo, então dá pra rodar várias vezes sem problema. **Mas isso apaga tudo que estava no schema:** dados, índices, views, gatilhos, permissões e policies. Depois dele, roda de novo todos os outros na ordem da tabela (do 03 ao 11; o 02 é opcional).
 - O `03_carga_v1.sql` e o `04_indices_v1.sql` também podem ser rodados várias vezes (o primeiro zera as tabelas antes de popular, o segundo apaga os índices antes de criar).
 - O `03_carga_v1.sql` tem que rodar antes do `04_indices_v1.sql`.
 - Os scripts de concorrência são diferentes: não é F5 no arquivo todo, é passo a passo em duas abas (ver "Transações e concorrência" abaixo).
@@ -110,8 +110,8 @@ Quantidade (o Marco 1 pede no mínimo 100 alunos, 6 turmas e 300 matrículas):
 |---|---|
 | tb_aluno | 2000 |
 | tb_turma | 1536 (192 por semestre, 8 semestres de 2023/1 a 2026/2) |
-| tb_matricula | ~25 mil |
-| tb_historico | ~24,6 mil |
+| tb_matricula | 24.964 |
+| tb_historico | 24.577 |
 
 Ficou bem acima do mínimo de propósito: com poucas linhas o PostgreSQL lê a tabela inteira e o índice não mostra ganho no EXPLAIN.
 
@@ -137,7 +137,7 @@ Para cada índice o script faz: EXPLAIN antes, CREATE INDEX, EXPLAIN depois da m
 | 1 | `ix_matricula_turma_ativa` em tb_matricula (id_turma) **WHERE ds_status = 'ativa'** (parcial) | vagas ocupadas de uma turma | só as matrículas ativas ocupam vaga; o índice guarda só elas e fica bem menor que um índice completo |
 | 2 | `ix_historico_situacao_media` em tb_historico (ds_situacao, qt_media_final DESC) | top 10 médias dos aprovados | filtro e ordenação no mesmo índice: lê 10 linhas e para, sem ordenar tudo |
 | 3 | `ix_matricula_dt` em tb_matricula (dt_matricula) | últimas 20 matrículas | percorre o índice de trás pra frente e para na 20ª |
-| 4 | `ix_aluno_nm_pattern` em tb_aluno (nm_aluno varchar_pattern_ops) | aluno pelo começo do nome (`LIKE 'Ana Silva%'`) | índice comum não atende LIKE com collation de idioma; só serve pra prefixo, não pra `%texto%` |
+| 4 | `ix_aluno_nm_pattern` em tb_aluno (nm_aluno varchar_pattern_ops) | aluno pelo começo do nome (`LIKE 'Ana Silva%'`) | índice comum não atende LIKE com collation de idioma (o script cria um índice comum de controle e o plano continua Seq Scan com a collation `en_US.utf8` do banco); só serve pra prefixo, não pra `%texto%` |
 
 Os planos aparecem na aba **Messages** do pgAdmin e o resumo (tempo e páginas lidas, antes e depois) na aba **Data Output**. As páginas lidas (buffers) quase não mudam de uma execução pra outra; o tempo muda um pouco.
 
@@ -147,10 +147,10 @@ Banco criado do zero (01 a 04), PostgreSQL 16. Cada consulta roda duas vezes e s
 
 | # | Plano antes | Plano depois | Tempo | Páginas lidas |
 |---|---|---|---|---|
-| 1 | Index Scan no índice único (id_aluno, id_turma): como id_turma é a 2ª coluna, ele percorre o índice inteiro | Bitmap Index Scan no `ix_matricula_turma_ativa`, direto nas 34 matrículas ativas da turma | 0,152 ms → 0,024 ms (6,3 vezes) | 102 → 31 |
-| 2 | Seq Scan no histórico inteiro (24.577 linhas, 19.174 aprovadas) e ordenação | Index Scan no `ix_historico_situacao_media`, para na 10ª linha | 2,315 ms → 0,012 ms (192,9 vezes) | 197 → 12 |
-| 3 | Seq Scan nas 24.964 matrículas e ordenação | Index Scan Backward no `ix_matricula_dt`, para na 20ª linha | 2,353 ms → 0,012 ms (196,1 vezes) | 184 → 22 |
-| 4 | Seq Scan nos 2000 alunos | Index Scan no `ix_aluno_nm_pattern` | 0,080 ms → 0,012 ms (6,7 vezes) | 31 → 3 |
+| 1 | Index Scan no índice único (id_aluno, id_turma): como id_turma é a 2ª coluna, ele percorre o índice inteiro | Bitmap Index Scan no `ix_matricula_turma_ativa`, direto nas 34 matrículas ativas da turma | 0,167 ms → 0,036 ms (4,6 vezes) | 102 → 31 |
+| 2 | Seq Scan no histórico inteiro (24.577 linhas, 19.174 aprovadas) e ordenação | Index Scan no `ix_historico_situacao_media`, para na 10ª linha | 3,099 ms → 0,013 ms (238,4 vezes) | 197 → 12 |
+| 3 | Seq Scan nas 24.964 matrículas e ordenação | Index Scan Backward no `ix_matricula_dt`, para na 20ª linha | 2,376 ms → 0,013 ms (182,8 vezes) | 184 → 22 |
+| 4 | Seq Scan nos 2000 alunos (com o índice comum de controle também) | Index Scan no `ix_aluno_nm_pattern` | 0,071 ms → 0,011 ms (6,5 vezes) | 31 → 3 |
 
 O índice parcial (só matrículas ativas) ocupa 56 kB. O mesmo índice com todas as matrículas ocuparia 208 kB.
 
@@ -192,11 +192,13 @@ A turma começa com 35 vagas e 34 ocupadas (1 livre).
 
 Nas duas soluções as duas abas rodam o mesmo INSERT, que só insere se ainda tiver vaga. Quem decide é o banco, não a pessoa olhando o resultado.
 
+Só a conferência dentro do INSERT não basta. Sem o FOR UPDATE e sem o SERIALIZABLE, as duas abas contam 34 ocupadas ao mesmo tempo, as duas inserem e a turma fica com 36 (medido: X4).
+
 A saída das duas abas, passo a passo, está em `evidencias/concorrencia_duas_abas_v1.txt`. Ela foi gerada com duas sessões abertas ao mesmo tempo (o mesmo que as duas abas do Query Tool), mandando cada passo só para a aba que o script indica.
 
 ### Comparação entre as duas soluções
 
-O que está marcado como "medido" vem do arquivo de evidência acima (as medições X1, X2 e X3 estão no fim dele). O resto vem do manual do PostgreSQL 16 (seções 13.2.3, 13.3.2 e 13.3.4).
+O que está marcado como "medido" vem do arquivo de evidência acima (as medições X1 a X5 estão no fim dele). O resto vem do manual do PostgreSQL 16 (seções 13.2.3, 13.3.2 e 13.3.4).
 
 | | FOR UPDATE (pessimista) | SERIALIZABLE (otimista) |
 |---|---|---|
@@ -207,7 +209,7 @@ O que está marcado como "medido" vem do arquivo de evidência acima (as mediç�
 | Risco | Deadlock se uma transação trancar duas turmas numa ordem e outra na ordem contrária. O banco derruba uma delas. Para evitar: trancar sempre em ordem de `id_turma`. | Mais erro 40001 do que o necessário quando a transação lê muitas linhas da mesma tabela (ver abaixo). |
 | Condição | Todo lugar que matricula tem que fazer o FOR UPDATE antes de contar as vagas. | Todas as transações de matrícula têm que rodar em SERIALIZABLE. |
 
-Por que o SERIALIZABLE derrubou matrícula de turma diferente (X2): a contagem de vagas lê as 34 matrículas ativas da turma, e o PostgreSQL guarda no máximo 32 travas de leitura por tabela em cada transação (`max_pred_locks_per_transaction` = 64, dividido por 2 em `max_pred_locks_per_relation`). Passou disso, ele troca as 34 por uma trava na tabela `tb_matricula` inteira (X1 mostra essa trava). Aí qualquer matrícula nova, em qualquer turma, conta como conflito. Numa turma com 25 alunos isso não aconteceu: ficaram 24 travas de página e de linha, sem trava na tabela.
+Por que o SERIALIZABLE derrubou matrícula de turma diferente (X2): a contagem de vagas lê as 34 matrículas ativas da turma, e o PostgreSQL guarda no máximo 32 travas de leitura por tabela em cada transação (`max_pred_locks_per_transaction` = 64, dividido por 2 em `max_pred_locks_per_relation`). Passou disso, ele troca as 34 por uma trava na tabela `tb_matricula` inteira (X1 mostra essa trava). Aí qualquer matrícula nova, em qualquer turma, conta como conflito. Numa turma com 25 matrículas ativas isso não aconteceu (X5): ficaram 25 travas de linha em `tb_matricula`, 1 de linha na turma e 2 de página nos índices, e nenhuma trava na tabela inteira.
 
 Qual usar na matrícula: o FOR UPDATE. A disputa é sempre pela mesma linha (a turma), a fila só se forma entre quem quer a mesma turma, e a aplicação não precisa de laço de repetição. O SERIALIZABLE vale mais quando há muitas regras e é difícil prever quem conflita com quem. Nesse caso o manual recomenda usar SERIALIZABLE em tudo e tratar o 40001 em um lugar só.
 
@@ -222,7 +224,7 @@ Qual usar na matrícula: o FOR UPDATE. A disputa é sempre pela mesma linha (a t
 | `vw_historico` | histórico do aluno com notas, frequência e situação | `security_invoker`: o RLS vale dentro da view, cada aluno vê só o dele |
 | `mv_indicadores` | aprovação, reprovação, média e frequência por curso e semestre | materialized view: o resultado fica gravado |
 
-Política de atualização da `mv_indicadores`: `REFRESH MATERIALIZED VIEW CONCURRENTLY` toda noite e depois do lançamento de notas, pela função `fn_atualizar_indicadores()` (a coordenação executa sem ser dona da view). O `CONCURRENTLY` não trava a leitura durante o refresh e precisa do índice único `uq_mv_indicadores`. Não tem refresh por gatilho: nota muda o tempo todo durante o semestre e indicador de gestão não precisa ser do segundo. A coluna `dt_atualizacao` mostra de quando são os números. Ganho medido: 30,4 ms e 426 páginas calculando na hora, 0,015 ms e 1 página lendo da materialized view.
+Política de atualização da `mv_indicadores`: `REFRESH MATERIALIZED VIEW CONCURRENTLY` depois de cada lançamento de notas e uma vez por noite, sempre pela função `fn_atualizar_indicadores()` (a coordenação executa sem ser dona da view). O agendamento da noite fica fora do banco: a imagem `postgres:16` do ambiente não traz o `pg_cron` (conferido em `pg_available_extensions`), então em produção seria um job do servidor rodando `SELECT projeto_bd2.fn_atualizar_indicadores();`. No projeto o refresh é chamado à mão (bloco 5 do 07). O `CONCURRENTLY` não trava a leitura durante o refresh e precisa do índice único `uq_mv_indicadores`. Não tem refresh por gatilho: nota muda o tempo todo durante o semestre e indicador de gestão não precisa ser do segundo. A coluna `dt_atualizacao` mostra de quando são os números. Ganho medido: 20,8 ms e 426 páginas calculando na hora, 0,011 ms e 1 página lendo da materialized view.
 
 ### Segurança (`09_administracao_seguranca_v1.sql`)
 
@@ -249,7 +251,7 @@ Os 29 testes, os 24 mutantes que provam que eles pegam erro e a saída estão em
 
 Os gatilhos `trg_log_matricula` e `trg_log_historico` gravam cada INSERT, UPDATE e DELETE de `tb_matricula` e de `tb_historico` (as notas) em `tb_log_matricula`, com a tabela, a linha antes e depois em JSONB, o papel que fez (`CURRENT_USER`, em `nm_usuario`) e o usuário que conectou (`session_user`, em `usuario_sessao` dentro do JSON). O gatilho `trg_log_so_pelo_gatilho` recusa INSERT feito direto no log: a secretaria precisa de INSERT no log para o gatilho funcionar, e sem essa trava poderia inventar uma linha.
 
-O índice GIN `ix_log_matricula_detalhe` (`jsonb_path_ops`) atende a busca "toda a movimentação de um aluno" (`ds_detalhe @> '{"depois": {"id_aluno": 12}}'`): de 55,0 ms e 896 páginas (leitura da tabela inteira) para 0,057 ms e 5 páginas.
+O índice GIN `ix_log_matricula_detalhe` (`jsonb_path_ops`) atende a busca "toda a movimentação de um aluno" (`ds_detalhe @> '{"depois": {"id_aluno": 12}}'`): de 16,9 ms e 896 páginas (leitura da tabela inteira) para 0,037 ms e 5 páginas.
 
 Fica fora do log: mudança no cadastro do aluno (`tb_aluno`), porque o log é por matrícula. A secretaria é o único papel que altera `tb_aluno`.
 
@@ -265,21 +267,43 @@ O `08_administracao_auditoria_v1.sql` tem que rodar como superusuário (o `bd2` 
 |---|---|---|
 | `evidencias/explain_indices_v1.txt` | EXPLAIN (ANALYZE, BUFFERS) de cada consulta antes e depois de cada índice | `04_indices_v1.sql`, aba Messages |
 | `evidencias/resumo_indices_v1.csv` | tempo e páginas lidas antes e depois, e quantas vezes ficou mais rápido | `04_indices_v1.sql`, aba Data Output |
-| `evidencias/concorrencia_duas_abas_v1.txt` | as duas abas passo a passo no erro e nas duas soluções, e as medições X1 a X3 da comparação | `05a` a `05e`, em duas sessões ao mesmo tempo |
+| `evidencias/concorrencia_duas_abas_v1.txt` | as duas abas passo a passo no erro e nas duas soluções, e as medições X1 a X5 da comparação | `05a` a `05e`, em duas sessões ao mesmo tempo |
 | `evidencias/explain_administracao_v1.txt` | ganho da materialized view e do índice GIN | `07` e `08` |
 | `evidencias/testes_seguranca_v1.txt` | os 29 testes de segurança e os 24 mutantes | `10` |
 | `evidencias/backup_restauracao_v1.txt` | impressão digital igual antes e depois da restauração | `11` e os comandos de `docs/backup_restauracao.md` |
 
-Os três arquivos da administração foram gerados em 14/11, antes de os scripts ganharem número. Por isso eles citam os scripts pelo nome antigo, sem o número na frente (`administracao_views_v1.sql` em vez de `07_administracao_views_v1.sql`). Nesses scripts só mudaram os comentários que citam outros scripts.
+Todos os arquivos de evidência foram gerados na mesma rodada, com o banco criado do zero pelos scripts 01 a 11 na ordem da tabela, no PostgreSQL 16 (imagem `postgres:16`, a mesma do ambiente da disciplina). A data e a versão estão no cabeçalho de cada arquivo. A rodada usou o `psql`, que mostra o mesmo conteúdo das abas Messages e Data Output do pgAdmin.
 
 ## Sobre o modelo
 
-Os dois diagramas abrem no app.diagrams.net:
+Os dois diagramas abrem no app.diagrams.net e seguem o modelo da Aula 04: fundo branco, cabeçalho do IESB, linhas retas e o par (mín,máx) escrito nas duas pontas de cada relacionamento.
 
-- `modelo/modelo_conceitual.drawio`: o modelo conceitual (DER) na notação de Chen, com as 12 entidades, os 15 relacionamentos e os atributos (o identificador sublinhado e os calculados tracejados). A matrícula é a entidade associativa entre aluno e turma. O rodapé explica como o conceitual vira o lógico: cada entidade vira tabela, o 1:N vira FK no lado N, o 1:1 (matrícula gera histórico) vira FK com UNIQUE e os quatro N:N viram as tabelas associativas tb_matricula, tb_curriculo_disciplina, tb_pre_requisito e tb_turma_horario.
-- `modelo/modelo_logico.v4.drawio`: o modelo lógico com as 17 tabelas (as 12 entidades, as 4 associativas e o log de auditoria), os tipos, PK, FK e a cardinalidade (mín,máx) de cada relacionamento. O rodapé lista as regras que não viram linha: as duas FKs compostas, o EXCLUDE de horário, o log sem FK e o feriado nacional (campus nulo).
+- `modelo/modelo_conceitual.drawio`: o modelo conceitual (DER) na notação de Chen. 12 entidades (retângulo), 15 relacionamentos (losango com um verbo) e os atributos (elipse; o identificador sublinhado e os calculados tracejados). MATRÍCULA é a entidade associativa (losango dentro do retângulo) entre ALUNO e TURMA. O rodapé explica como ler a cardinalidade, onde a mínima é 0 e por quê, e como o conceitual vira o lógico: cada entidade vira tabela, o 1:N vira FK no lado N, o 1:1 (matrícula gera histórico) vira FK com UNIQUE e os quatro N:N viram as tabelas associativas tb_matricula, tb_curriculo_disciplina, tb_pre_requisito e tb_turma_horario.
+- `modelo/modelo_logico.drawio`: o modelo lógico com as 17 tabelas (as 12 entidades, as 4 associativas e o log de auditoria), com colunas, tipos, PK, FK, únicos e colunas geradas. Cada linha sai da FK e chega na PK, com o par (mín,máx) nas duas pontas. O rodapé lista os únicos de várias colunas e as regras que não viram linha: as duas FKs compostas, o EXCLUDE de horário, o log sem FK e o feriado nacional (campus nulo).
 
-Nos dois, o par (mín,máx) fica escrito junto da entidade que ele descreve, como na Aula 04: ao lado de tb_campus, (0,N) quer dizer que um campus tem de zero a vários cursos; ao lado de tb_curso, (1,1) quer dizer que um curso fica em exatamente um campus. No lógico o pé de galinha segue o padrão das ferramentas: a ponta de "muitos" fica no lado da FK.
+### Como ler a cardinalidade
+
+O par fica junto da entidade (ou tabela) que começa a frase, como na Aula 04. Exemplo: `CAMPUS (1,N) ---- possui ---- (1,1) SALA` se lê "um campus possui de 1 a N salas" e "uma sala fica em exatamente 1 campus". Os comentários das FKs no `01_modelo_fisico_v1.sql` usam o mesmo padrão.
+
+- Do lado da FK, a mínima vira restrição: (1,1) = FK `NOT NULL`; (0,1) = FK que aceita nulo (só em tb_feriado, onde nulo é feriado nacional). O `02_testes_restricoes_v1.sql` prova: matrícula sem turma é barrada pelo NOT NULL (bloco 7f) e o segundo histórico da mesma matrícula é barrado pelo UNIQUE (bloco 7i).
+- Do lado da PK, a mínima é regra do negócio: o DDL não obriga um pai a ter filho (como no exemplo da aula, ALUNO (1,N) cursa TURMA). Por isso a mínima 0 só aparece onde a carga tem um caso real de pai sem filho. Em todos os outros pares a mínima é 1, e a contagem de pai sem filho no banco criado do zero deu 0.
+
+| Relacionamento | Onde a mínima é 0 | Caso real na carga |
+|---|---|---|
+| FERIADO vale para CAMPUS | FERIADO (0,1) e CAMPUS (0,N) | 6 feriados nacionais, sem campus; o campus Goiânia Centro não tem feriado local |
+| CAMPUS oferece CURSO | CAMPUS (0,N) | Goiânia Centro não tem curso (1 dos 2 campus) |
+| DISCIPLINA exige DISCIPLINA | (0,N) nas duas pontas | 4 das 24 disciplinas não têm pré-requisito; 7 não são pré-requisito de nenhuma |
+| TURMA ocupa SALA (horário) | SALA (0,N) | 4 das 12 salas não têm horário |
+| ALUNO matricula-se em TURMA | TURMA (0,N) | 512 das 1.536 turmas não têm matrícula |
+| MATRÍCULA gera HISTÓRICO | MATRÍCULA (0,1) | 387 das 24.964 matrículas não têm histórico (as 169 trancadas e as 218 canceladas) |
+
+### Regras que ficaram fora do banco (decisão do grupo)
+
+- Professor em duas turmas no mesmo horário: o EXCLUDE de `tb_turma_horario` barra só a sala; o professor fica para a aplicação da secretaria.
+- Períodos letivos que se sobrepõem: o banco confere só que o fim vem depois do início e que o ano bate com as datas.
+- Dígito verificador do CPF: o CHECK confere 11 dígitos e barra os 11 iguais; o cálculo do dígito fica na aplicação.
+- Pré-requisito na hora da matrícula: o banco guarda quem exige quem, mas não barra a matrícula de quem não passou; a carga respeita a regra e a aplicação confere.
+- Limite de vagas da turma: um CHECK não enxerga as outras linhas, então quem garante é a transação (05c e 05d).
 
 Padrão de nomes:
 

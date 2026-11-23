@@ -1,11 +1,12 @@
 EVIDENCIAS - TRANSACOES E CONCORRENCIA (a ultima vaga da turma CCO072 2026/2 A: 35 vagas, 34 ocupadas)
-Gerado em 22/11/2026 01:23 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
+Gerado em 23/11/2026 09:46 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1) no Docker (imagem postgres:16), banco criado do zero
 com os scripts 01 a 04 na ordem do README.
 Como foi gerado: duas sessoes psql abertas ao mesmo tempo no banco matricula, no papel das duas abas do Query Tool.
 Cada passo dos scripts 05b, 05c e 05d foi mandado so para a aba que o script indica, com 1,5 s entre um e outro.
 [ABA 1] e [ABA 2] = o que cada aba mostrou logo depois daquele passo.
 (esperando trava: ...) = sessoes paradas esperando uma trava naquele momento, lido de pg_stat_activity.
 A limpeza (05e) e a conferencia FINAL rodam numa terceira conexao. Erro aparece com o codigo (SQLSTATE) na frente.
+No fim, as medicoes X1 a X5 usadas na comparacao do README (nao fazem parte da demonstracao).
 
 ==================== preparacao ====================
    limpeza (05e, numa terceira conexao): ok -> turma A com 35 vagas, 34 ocupadas, vagas_livres = 1
@@ -238,9 +239,54 @@ A limpeza (05e) e a conferencia FINAL rodam numa terceira conexao. Erro aparece 
 [ABA 2] ROLLBACK
    (esperando trava: nenhuma)
 
+-- X4 - o INSERT que confere a vaga, SEM o FOR UPDATE, nas duas abas antes de algum COMMIT (turma A)
+[ABA 2]  turma_da_aba_2 
+[ABA 2] ----------------
+[ABA 2]  1529
+[ABA 2] (1 row)
+   (esperando trava: nenhuma)
+   limpeza (05e, numa terceira conexao): ok -> turma A com 35 vagas, 34 ocupadas, vagas_livres = 1
+[ABA 1] BEGIN
+[ABA 1] INSERT 0 1
+   (esperando trava: nenhuma)
+[ABA 2] BEGIN
+[ABA 2] INSERT 0 1
+   (esperando trava: nenhuma)
+[ABA 1] COMMIT
+[ABA 2] COMMIT
+   (esperando trava: nenhuma)
+   depois: turma A com 35 vagas, 36 ocupadas, vagas_livres = -1
+   limpeza (05e, numa terceira conexao): ok -> turma A com 35 vagas, 34 ocupadas, vagas_livres = 1
+
+-- X5 - travas SIReadLock numa turma com ate 32 matriculas ativas (a turma 2026/2 com contagem mais perto de 25)
+   turma 1393: 25 matriculas ativas
+[ABA 1]  turma_da_aba_1 
+[ABA 1] ----------------
+[ABA 1]  1393
+[ABA 1] (1 row)
+[ABA 1] BEGIN
+[ABA 1]  vagas_livres 
+[ABA 1] --------------
+[ABA 1]            20
+[ABA 1] (1 row)
+   (esperando trava: nenhuma)
+   travas SIReadLock da ABA 1 (terceira conexao, pg_locks):
+      page em projeto_bd2.ix_matricula_turma_ativa: 1
+      page em projeto_bd2.uq_turma_id_periodo: 1
+      tuple em projeto_bd2.tb_matricula: 25
+      tuple em projeto_bd2.tb_turma: 1
+[ABA 1] ROLLBACK
+[ABA 1]  turma_da_aba_1 
+[ABA 1] ----------------
+[ABA 1]  1529
+[ABA 1] (1 row)
+   (esperando trava: nenhuma)
+
 RESUMO
 05b_concorrencia_erro_v1.sql                     35 vagas, 36 ocupadas, vagas_livres = -1
 05c_concorrencia_solucao1_for_update_v1.sql      35 vagas, 35 ocupadas, vagas_livres = 0 (ABA 2 esperou a trava)
 05d_concorrencia_solucao2_serializable_v1.sql    35 vagas, 35 ocupadas, vagas_livres = 0 (ABA 2 recebeu o erro 40001 e repetiu)
 X2 SERIALIZABLE turmas diferentes: ABA 2 recebeu 40001 (falso positivo)
 X3 FOR UPDATE turmas diferentes: ninguem esperou
+X4 INSERT com conferencia, sem FOR UPDATE: turma A com 35 vagas, 36 ocupadas, vagas_livres = -1
+X5 SERIALIZABLE turma com 25 ativas: sem trava na tabela tb_matricula inteira

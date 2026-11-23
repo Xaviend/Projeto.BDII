@@ -16,7 +16,7 @@ Nas quatro, a impressão digital (`sql/11_administracao_backup_conferencia_v1.sq
 | Arquivo | O que guarda | Comando |
 |---|---|---|
 | `matricula.dump` | o schema `projeto_bd2` inteiro: tabelas, dados, índices, views, materialized view, funções, gatilhos, policies de RLS e GRANTs | `pg_dump -n projeto_bd2 -Fc` |
-| `papeis.sql` | os papéis (aluno, secretaria, coordenacao, aluno_26000001, aluno_26000012), **sem senha** | `pg_dumpall --roles-only --no-role-passwords` |
+| `papeis.sql` | todos os papéis do servidor, **sem senha**: os do projeto (aluno, secretaria, coordenacao, aluno_26000001, aluno_26000012) e também o `bd2` e qualquer outro que exista no servidor | `pg_dumpall --roles-only --no-role-passwords` |
 
 Por que dois arquivos: papel (role) não pertence a um banco, pertence ao servidor inteiro. O `pg_dump` guarda os GRANTs e as policies que citam os papéis, mas não cria os papéis. No mesmo servidor eles já existem. Num servidor novo, o `papeis.sql` roda antes.
 

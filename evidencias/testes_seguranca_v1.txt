@@ -1,6 +1,6 @@
 EVIDENCIAS - TESTES DE SEGURANCA (papeis, GRANT/REVOKE e RLS)
-Saida do sql/administracao_seguranca_testes_v1.sql, gerada em 14/11/2026 20:09 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1),
-banco criado do zero com os scripts na ordem do README. Esperado: 29 OK e nenhum FALHOU.
+Saida do sql/10_administracao_seguranca_testes_v1.sql, gerada em 23/11/2026 09:46 (horario de Brasilia), PostgreSQL 16.16 (Debian 16.16-1.pgdg13+1),
+banco criado do zero com os scripts 01 a 11 na ordem do README. Esperado: 29 OK e nenhum FALHOU.
 
 ########## PARTE 1 - demonstracao (aba Data Output) ##########
  quem_sou | cd_matricula | disciplinas_no_historico 
@@ -47,7 +47,7 @@ OK barrado (teste 17): secretaria so altera o status da matricula: permission de
 OK barrado (teste 18): ninguem grava log em nome de outro: permission denied for table tb_log_matricula
 OK barrado (teste 19): log nao aceita INSERT direto: tb_log_matricula so recebe linha do gatilho de auditoria (usuario secretaria)
 OK barrado (teste 20): log nao se edita: permission denied for table tb_log_matricula
-OK (teste 21): coordenacao le 20 linhas de indicadores e atualizou em 2026-11-14 23:07:34.533372+00
+OK (teste 21): coordenacao le 20 linhas de indicadores e atualizou em 2026-11-23 12:47:44.986068+00
 OK (teste 22): coordenacao ve o historico de 1988 alunos
 OK (teste 23): coordenacao le nome e matricula do aluno
 OK barrado (teste 24): coordenacao nao le CPF, e-mail nem nascimento do aluno
@@ -63,27 +63,27 @@ Total OK: 29 | Total FALHOU: 0
 Cada linha: uma permissao, papel, policy ou gatilho estragado de proposito, os testes que acusaram FALHOU,
 o script do projeto que desfez o estrago e quantos testes deram OK depois (esperado 29).
 ERROR no fim da linha: o estrago deixou uma acao proibida passar e o efeito dela parou o script (ja tinha FALHOU antes).
-A_historico_true => FALHOU (teste 2) | restaurado com administracao_seguranca_v1.sql: 29 OK
-B_matricula_true => FALHOU (teste 2) | restaurado com administracao_seguranca_v1.sql: 29 OK
-C_cadastro_true => FALHOU (teste 3) | restaurado com administracao_seguranca_v1.sql: 29 OK
-D_rls_off_historico => FALHOU (teste 2) FALHOU (teste 29) | restaurado com administracao_seguranca_v1.sql: 29 OK
-E_delete_secretaria => FALHOU (teste 16) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-F_log_aluno => FALHOU (teste 7) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-G_vagas_invoker => FALHOU (teste 5) | restaurado com ALTER VIEW vw_vagas SET (security_invoker = false) (o que o administracao_views_v1.sql cria): 29 OK
-H_cpf_coordenacao => FALHOU (teste 24) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-I_update_coluna_toda => FALHOU (teste 17) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-J_log_nm_usuario => FALHOU (teste 18) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-K_schema_public => FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-L_log_sem_trava => FALHOU (teste 19) | restaurado com administracao_auditoria_v1.sql + administracao_seguranca_v1.sql: 29 OK
-M_email_coordenacao => FALHOU (teste 24) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-N_execute_public => FALHOU (teste 9) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-O_aluno_bypassrls => FALHOU (teste 1) FALHOU (teste 2) FALHOU (teste 3) FALHOU (teste 28) | restaurado com administracao_seguranca_v1.sql: 29 OK
-P_aluno_na_secretaria => FALHOU (teste 1) FALHOU (teste 2) FALHOU (teste 3) FALHOU (teste 6) FALHOU (teste 7) FALHOU (teste 8) FALHOU (teste 11) FALHOU (teste 12) ERROR:  duplicate key value violates unique constraint "uq_matricula_aluno_turma" | restaurado com administracao_seguranca_v1.sql: 29 OK
-Q_policy_extra_update => FALHOU (teste 29) | restaurado com administracao_seguranca_v1.sql: 29 OK
-R_aluno_sem_nome_professor => FALHOU (teste 10) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-S_nota_sem_log => FALHOU (teste 15) | restaurado com administracao_auditoria_v1.sql + administracao_seguranca_v1.sql: 29 OK
-T_log_retroativo => FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-U_sequence_aluno => FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-V_create_schema => FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-W_grant_direto_aluno => FALHOU (teste 7) FALHOU (teste 27) | restaurado com administracao_seguranca_v1.sql: 29 OK
-X_policy_extra_publica => FALHOU (teste 3) FALHOU (teste 29) | restaurado com administracao_seguranca_v1.sql: 29 OK
+A_historico_true => FALHOU (teste 2) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+B_matricula_true => FALHOU (teste 2) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+C_cadastro_true => FALHOU (teste 3) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+D_rls_off_historico => FALHOU (teste 2) FALHOU (teste 29) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+E_delete_secretaria => FALHOU (teste 16) FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+F_log_aluno => FALHOU (teste 7) FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+G_vagas_invoker => FALHOU (teste 5) | restaurado com ALTER VIEW vw_vagas SET (security_invoker = false) (o que o 07_administracao_views_v1.sql cria): 29 OK
+H_cpf_coordenacao => FALHOU (teste 24) FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+I_update_coluna_toda => FALHOU (teste 17) FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+J_log_nm_usuario => FALHOU (teste 18) FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+K_schema_public => FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+L_log_sem_trava => FALHOU (teste 19) | restaurado com 08_administracao_auditoria_v1.sql + 09_administracao_seguranca_v1.sql: 29 OK
+M_email_coordenacao => FALHOU (teste 24) FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+N_execute_public => FALHOU (teste 9) FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+O_aluno_bypassrls => FALHOU (teste 1) FALHOU (teste 2) FALHOU (teste 3) FALHOU (teste 28) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+P_aluno_na_secretaria => FALHOU (teste 1) FALHOU (teste 2) FALHOU (teste 3) FALHOU (teste 6) FALHOU (teste 7) FALHOU (teste 8) FALHOU (teste 11) FALHOU (teste 12) ERROR:  duplicate key value violates unique constraint "uq_matricula_aluno_turma" | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+Q_policy_extra_update => FALHOU (teste 29) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+R_aluno_sem_nome_professor => FALHOU (teste 10) FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+S_nota_sem_log => FALHOU (teste 15) | restaurado com 08_administracao_auditoria_v1.sql + 09_administracao_seguranca_v1.sql: 29 OK
+T_log_retroativo => FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+U_sequence_aluno => FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+V_create_schema => FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+W_grant_direto_aluno => FALHOU (teste 7) FALHOU (teste 27) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
+X_policy_extra_publica => FALHOU (teste 3) FALHOU (teste 29) | restaurado com 09_administracao_seguranca_v1.sql: 29 OK
